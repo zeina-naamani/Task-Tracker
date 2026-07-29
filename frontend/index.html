@@ -67,6 +67,56 @@
         background: #2563eb;
       }
 
+      .task-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .task-filter-bar label {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      .task-filter-bar select,
+      .task-filter-bar input {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      .task-filter-bar input {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .task-filter-bar .active-filter {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+      }
+
+      .clear-filters-btn {
+        border: 1px solid var(--border);
+        background: #f8fafc;
+        color: var(--text);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .clear-filters-btn:hover {
+        background: #e2e8f0;
+      }
+
       .board {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -141,6 +191,11 @@
         font-weight: 700;
         background: #e5e7eb;
         color: #374151;
+      }
+
+      .pill-overdue {
+        background: #fee2e2;
+        color: #b91c1c;
       }
 
       .priority-high {
@@ -355,6 +410,31 @@
         <button class="new-task-btn" id="new-task-btn">+ New Task</button>
       </header>
 
+      <div class="task-filter-bar">
+        <label for="task-search">Search</label>
+        <input type="search" id="task-search" placeholder="Search title, description, or assignee">
+        <label for="task-status-filter">Status</label>
+        <select id="task-status-filter">
+          <option value="all" selected>All Statuses</option>
+          <option value="ToDo">To Do</option>
+          <option value="InProgress">In Progress</option>
+          <option value="Done">Done</option>
+        </select>
+        <label for="task-priority-filter">Priority</label>
+        <select id="task-priority-filter">
+          <option value="all" selected>All Priorities</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <label for="task-filter">Filter</label>
+        <select id="task-filter">
+          <option value="all" selected>All Tasks</option>
+          <option value="overdue">Overdue Only</option>
+        </select>
+        <button type="button" class="clear-filters-btn" id="clear-filters-btn">Clear Filters</button>
+      </div>
+
       <main class="board" id="board"></main>
     </div>
 
@@ -396,12 +476,16 @@
               <label for="task-assignee" style="display: block; margin-bottom: 6px; font-weight: 700; color: var(--text);">Assignee</label>
               <input type="text" id="task-assignee" name="assignee" placeholder="Enter assignee name" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
             </div>
+            <div style="margin-bottom: 16px;">
+              <label for="task-due-date" style="display: block; margin-bottom: 6px; font-weight: 700; color: var(--text);">Due Date</label>
+              <input type="date" id="task-due-date" name="due_date" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+            </div>
             <div id="modal-error" style="display: none; margin-bottom: 16px; padding: 12px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: 0.9rem;"></div>
           </form>
         </div>
         <div class="modal-footer">
-          <button class="modal-cancel" id="modal-cancel-btn">Cancel</button>
-          <button class="modal-submit" id="modal-submit-btn">Save Task</button>
+          <button class="modal-cancel" id="modal-cancel-btn" type="button">Cancel</button>
+          <button class="modal-submit" id="modal-submit-btn" type="submit" form="task-form">Save Task</button>
         </div>
       </div>
     </div>
@@ -422,12 +506,57 @@
 
       const board = document.getElementById('board');
       const tasks = [];
+      let activeTaskFilter = 'all';
+      let searchQuery = '';
+      let activeStatusFilter = 'all';
+      let activePriorityFilter = 'all';
+      let searchDebounceTimer = null;
       
       let dragState = {
         cardElement: null,
         taskId: null,
         previousStatus: null
       };
+
+      function getVisibleTasks() {
+        let visible = tasks;
+
+        if (activeStatusFilter !== 'all') {
+          visible = visible.filter((task) => task.status === activeStatusFilter);
+        }
+
+        if (activePriorityFilter !== 'all') {
+          visible = visible.filter((task) => task.priority === activePriorityFilter);
+        }
+
+        if (activeTaskFilter === 'overdue') {
+          visible = visible.filter((task) => task.overdue === true);
+        }
+
+        return visible;
+      }
+
+      function hasBackendFilters() {
+        return searchQuery.trim() !== ''
+          || activeStatusFilter !== 'all'
+          || activePriorityFilter !== 'all';
+      }
+
+      function updateFilterStyles() {
+        const searchInput = document.getElementById('task-search');
+        const statusSelect = document.getElementById('task-status-filter');
+        const prioritySelect = document.getElementById('task-priority-filter');
+        const overdueSelect = document.getElementById('task-filter');
+
+        searchInput.classList.toggle('active-filter', searchInput.value.trim() !== '');
+        statusSelect.classList.toggle('active-filter', statusSelect.value !== 'all');
+        prioritySelect.classList.toggle('active-filter', prioritySelect.value !== 'all');
+        overdueSelect.classList.toggle('active-filter', overdueSelect.value !== 'all');
+      }
+
+      function renderCurrentView() {
+        renderBoard(getVisibleTasks());
+      }
 
       function escapeHtml(value) {
         return String(value ?? '')
@@ -511,6 +640,8 @@
                         <div class="task-meta">
                           <span class="pill ${priorityClass(task.priority)}">Priority: ${escapeHtml(task.priority || 'Low')}</span>
                           <span class="pill">Assignee: ${escapeHtml(task.assignee || 'Unassigned')}</span>
+                          ${task.due_date ? `<span class="pill">Due: ${escapeHtml(task.due_date)}</span>` : ''}
+                          ${task.overdue ? `<span class="pill pill-overdue">Overdue</span>` : ''}
                         </div>
                         <button class="edit-btn" type="button">Edit</button>
                       </article>
@@ -588,7 +719,7 @@
             const errorMessage = errorData.detail || `Server returned ${response.status}`;
             
             revertTaskStatus(taskId, previousStatus);
-            renderBoard(tasks);
+            renderCurrentView();
             
             const revertedCard = document.querySelector(`[data-task-id="${taskId}"]`);
             if (revertedCard) {
@@ -598,13 +729,16 @@
           }
 
           const updatedTask = await response.json();
-          updateTaskStatus(taskId, updatedTask.status);
-          renderBoard(tasks);
+          const taskIndex = tasks.findIndex(t => String(t.id) === String(taskId));
+          if (taskIndex !== -1) {
+            tasks[taskIndex] = updatedTask;
+          }
+          renderCurrentView();
         } catch (error) {
           console.error('Network error during task update:', error);
           
           revertTaskStatus(taskId, previousStatus);
-          renderBoard(tasks);
+          renderCurrentView();
           
           const revertedCard = document.querySelector(`[data-task-id="${taskId}"]`);
           if (revertedCard) {
@@ -678,7 +812,7 @@
             }
 
             updateTaskStatus(dragState.taskId, targetStatus);
-            renderBoard(tasks);
+            renderCurrentView();
 
             await patchTaskStatus(dragState.taskId, targetStatus, dragState.cardElement, dragState.previousStatus);
           });
@@ -689,7 +823,24 @@
         renderLoadingState();
 
         try {
-          const response = await fetch(`${BASE_URL}/tasks`);
+          const params = new URLSearchParams();
+          const query = searchQuery.trim();
+          if (query) {
+            params.set('search', query);
+          }
+          if (activeStatusFilter !== 'all') {
+            params.set('status', activeStatusFilter);
+          }
+          if (activePriorityFilter !== 'all') {
+            params.set('priority', activePriorityFilter);
+          }
+
+          const queryString = params.toString();
+          const url = queryString
+            ? `${BASE_URL}/tasks?${queryString}`
+            : `${BASE_URL}/tasks`;
+
+          const response = await fetch(url);
           if (!response.ok) {
             throw new Error(`Failed to load tasks: ${response.status}`);
           }
@@ -698,16 +849,65 @@
           tasks.length = 0;
           tasks.push(...payload);
 
-          if (tasks.length === 0) {
+          if (tasks.length === 0 && !hasBackendFilters()) {
             renderEmptyBoard();
             return;
           }
 
-          renderBoard(tasks);
+          renderCurrentView();
         } catch (error) {
           console.error(error);
           renderErrorState();
         }
+      }
+
+      const taskFilterSelect = document.getElementById('task-filter');
+      taskFilterSelect.addEventListener('change', () => {
+        activeTaskFilter = taskFilterSelect.value;
+        updateFilterStyles();
+        renderCurrentView();
+      });
+
+      const taskSearchInput = document.getElementById('task-search');
+      taskSearchInput.addEventListener('input', () => {
+        searchQuery = taskSearchInput.value;
+        updateFilterStyles();
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          fetchTasks();
+        }, 300);
+      });
+
+      const taskStatusSelect = document.getElementById('task-status-filter');
+      taskStatusSelect.addEventListener('change', () => {
+        activeStatusFilter = taskStatusSelect.value;
+        updateFilterStyles();
+        fetchTasks();
+      });
+
+      const taskPrioritySelect = document.getElementById('task-priority-filter');
+      taskPrioritySelect.addEventListener('change', () => {
+        activePriorityFilter = taskPrioritySelect.value;
+        updateFilterStyles();
+        fetchTasks();
+      });
+
+      const clearFiltersBtn = document.getElementById('clear-filters-btn');
+      clearFiltersBtn.addEventListener('click', clearFilters);
+
+      function clearFilters() {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = null;
+        searchQuery = '';
+        activeStatusFilter = 'all';
+        activePriorityFilter = 'all';
+        activeTaskFilter = 'all';
+        taskSearchInput.value = '';
+        taskStatusSelect.value = 'all';
+        taskPrioritySelect.value = 'all';
+        taskFilterSelect.value = 'all';
+        updateFilterStyles();
+        fetchTasks();
       }
 
       // Modal management
@@ -748,6 +948,7 @@
           document.getElementById('task-status').value = 'ToDo';
           document.getElementById('task-priority').value = 'Medium';
           document.getElementById('task-assignee').value = '';
+          document.getElementById('task-due-date').value = '';
         } else if (mode === 'edit' && taskData) {
           modalTitle.textContent = 'Edit Task';
           document.getElementById('task-title').value = taskData.title || '';
@@ -755,6 +956,7 @@
           document.getElementById('task-status').value = taskData.status || 'ToDo';
           document.getElementById('task-priority').value = taskData.priority || 'Medium';
           document.getElementById('task-assignee').value = taskData.assignee || '';
+          document.getElementById('task-due-date').value = taskData.due_date || '';
         }
 
         modalOverlay.classList.add('open');
@@ -790,6 +992,7 @@
         const status = document.getElementById('task-status').value;
         const priority = document.getElementById('task-priority').value;
         const assignee = document.getElementById('task-assignee').value.trim();
+        const dueDate = document.getElementById('task-due-date').value;
 
         // Validation
         if (!title) {
@@ -802,7 +1005,8 @@
           description: description === '' ? '' : description,
           status: status,
           priority: priority,
-          assignee: assignee === '' ? null : assignee
+          assignee: assignee === '' ? null : assignee,
+          due_date: dueDate === '' ? null : dueDate
         };
 
         try {
@@ -880,9 +1084,13 @@
         e.stopPropagation();
       });
 
-      // Submit button
-      modalSubmitBtn.addEventListener('click', submitTask);
+      // Submit the form when the user presses Enter or clicks Save Task
+      modalForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitTask();
+      });
 
+      updateFilterStyles();
       fetchTasks();
     </script>
   </body>

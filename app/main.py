@@ -51,10 +51,13 @@ def health_check() -> dict:
     tags=["tasks"],
 )
 def list_tasks(
+    search: str | None = None,
     status: TaskStatus | None = None,
     priority: TaskPriority | None = None,
 ) -> list[TaskResponse]:
+ #Return tasks filtered by optional search, status, and priority.
     return storage.get_all_tasks(
+        search=search,
         status=status,
         priority=priority,
     )
