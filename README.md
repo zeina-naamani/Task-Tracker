@@ -32,7 +32,7 @@ The project provides a Kanban-style task management interface with a FastAPI RES
 
 ## Project Structure
 
-```
+```text
 app/
 frontend/
 tests/
@@ -48,34 +48,54 @@ git clone <repository-url>
 cd Task-Tracker
 ```
 
-### 2. Create and activate a virtual environment
-
-Windows:
+### 2. Create and activate the virtual environment (Windows)
 
 ```powershell
-python -m venv venv
-venv\Scripts\Activate.ps1
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
 ### 3. Install dependencies
-pip install -r requirements.txt
+
+```bash
+python -m pip install -r requirements.txt
+```
 
 ### 4. Run the backend
-uvicorn app.main:app --reload --port 8000
+
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+The backend will be available at:
+
+- Swagger UI: http://127.0.0.1:8000/docs
+- Health Endpoint: http://127.0.0.1:8000/health
+- OpenAPI Specification: http://127.0.0.1:8000/openapi.json
 
 ### 5. Run the frontend
 
-Open `frontend/index.html` using VS Code Live Server.
+With the backend running:
+
+1. Open the `frontend` folder in Visual Studio Code.
+2. Open `frontend/index.html`.
+3. Right-click the file and select **Open with Live Server**.
+
+> **Note:** The backend must be running before opening the frontend, otherwise the frontend will not be able to communicate with the API.
 
 ## Running Tests
+
+Activate the virtual environment if it is not already active:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Run the test suite:
+
+```bash
 python -m pytest tests/ -v
-
-## API Documentation
-
-After starting the backend:
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+```
 
 ## Documentation
 
@@ -86,3 +106,7 @@ Project documentation is available in the `docs/` directory:
 - Prompt Log
 - Verification
 - Reflection
+
+## Submission
+
+The mid-course project work is available on the **mid-course-project** branch.
