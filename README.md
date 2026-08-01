@@ -99,7 +99,7 @@ python -m pytest tests/ -v
 
 ## Documentation
 
-Project documentation is available in the `docs/` directory:
+Project documentation for the mid-course project is available in the `docs/midcourse/` directory:
 
 - User Stories
 - Mini ADR

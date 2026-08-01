@@ -211,7 +211,29 @@ def test_patch_partial_update_keeps_other_fields(client, created_task):
     assert body["id"] == created_task["id"]
     assert body["created_at"] == created_task["created_at"]
     assert body["updated_at"] != created_task["updated_at"]
+def test_patch_title_null_returns_422(client, created_task):
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"title": None},
+    )
 
+    assert response.status_code == 422
+
+
+def test_patch_title_null_does_not_corrupt_task_list(client, created_task):
+    patch_response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"title": None},
+    )
+
+    assert patch_response.status_code == 422
+
+    list_response = client.get("/tasks")
+
+    assert list_response.status_code == 200
+    body = list_response.json()
+    assert len(body) == 1
+    assert body[0]["title"] == created_task["title"]
 
 def test_patch_not_found_returns_404(client):
     missing_id = "00000000-0000-0000-0000-000000000000"
