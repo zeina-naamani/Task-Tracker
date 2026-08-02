@@ -3,7 +3,7 @@
 
 ### Prompt
 
-1 – Add the due\_date field to the backend
+1 – Add the due_date field to the backend
 
 I am implementing Feature 1 (Due Dates + Overdue Filter) for my existing FastAPI Task Tracker.
 
@@ -19,17 +19,17 @@ Current project:
 
 
 
-&#x20; * id
+  * id
 
-&#x20; * title
+  * title
 
-&#x20; * description
+  * description
 
-&#x20; * status
+  * status
 
-&#x20; * priority
+  * priority
 
-&#x20; * assignee
+  * assignee
 
 * Existing CRUD endpoints and tests are working.
 
@@ -39,7 +39,7 @@ Current project:
 
 Task:
 
-Add support for an optional due\_date field to the backend data model.
+Add support for an optional due_date field to the backend data model.
 
 
 
@@ -47,7 +47,7 @@ Requirements:
 
 
 
-* Add an optional due\_date field to the appropriate Pydantic models.
+* Add an optional due_date field to the appropriate Pydantic models.
 
 * Use the appropriate Python date type for validation.
 
@@ -143,7 +143,7 @@ The response kept the change limited to the backend data model and existing task
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+---
 
 
 
@@ -184,9 +184,9 @@ Current state:
 
 
 
-* Backend supports an optional due\_date field using the YYYY-MM-DD format.
+* Backend supports an optional due_date field using the YYYY-MM-DD format.
 
-* Tasks can be created, updated, and cleared with due\_date: null.
+* Tasks can be created, updated, and cleared with due_date: null.
 
 * All 22 backend tests pass.
 
@@ -212,15 +212,15 @@ Requirements:
 
 1. Add an optional date input to the existing New/Edit Task modal.
 
-2. When creating a task, include due\_date in the request:
+2. When creating a task, include due_date in the request:
 
 
 
-&#x20;  * Send the selected YYYY-MM-DD value when provided.
+   * Send the selected YYYY-MM-DD value when provided.
 
-&#x20;  * Send null when the field is empty.
+   * Send null when the field is empty.
 
-3. When editing a task, prefill the date input with the task’s existing due\_date.
+3. When editing a task, prefill the date input with the task’s existing due_date.
 
 4. Allow the user to change or clear the due date while editing.
 
@@ -266,15 +266,15 @@ Verification:
 
 
 
-&#x20; 1. Create a task with a due date.
+  1. Create a task with a due date.
 
-&#x20; 2. Create a task without a due date.
+  2. Create a task without a due date.
 
-&#x20; 3. Edit a task and change its due date.
+  3. Edit a task and change its due date.
 
-&#x20; 4. Edit a task and clear its due date.
+  4. Edit a task and clear its due date.
 
-&#x20; 5. Confirm existing drag-and-drop and modal behavior still work.
+  5. Confirm existing drag-and-drop and modal behavior still work.
 
 
 
@@ -360,7 +360,7 @@ The implementation added an optional date picker to the Create and Edit Task mod
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+---
 
 
 
@@ -380,9 +380,9 @@ Current state:
 
 
 
-* Backend supports an optional due\_date field using Python’s date type.
+* Backend supports an optional due_date field using Python’s date type.
 
-* Tasks can be created, updated, and cleared with due\_date.
+* Tasks can be created, updated, and cleared with due_date.
 
 * All 22 backend tests pass.
 
@@ -408,11 +408,11 @@ Overdue rule:
 
 
 
-&#x20; * it has a due\_date,
+  * it has a due_date,
 
-&#x20; * the due\_date is earlier than the current calendar date,
+  * the due_date is earlier than the current calendar date,
 
-&#x20; * and the task status is not Done.
+  * and the task status is not Done.
 
 * A task due today is not overdue.
 
@@ -430,23 +430,23 @@ Requirements:
 
 3. Include overdue in task responses for create, list, and update operations.
 
-4. Keep due\_date stored as YYYY-MM-DD.
+4. Keep due_date stored as YYYY-MM-DD.
 
 5. Add focused backend tests for:
 
 
 
-&#x20;  * past-due ToDo task returns overdue: true,
+   * past-due ToDo task returns overdue: true,
 
-&#x20;  * past-due InProgress task returns overdue: true,
+   * past-due InProgress task returns overdue: true,
 
-&#x20;  * past-due Done task returns overdue: false,
+   * past-due Done task returns overdue: false,
 
-&#x20;  * task due today returns overdue: false,
+   * task due today returns overdue: false,
 
-&#x20;  * future task returns overdue: false,
+   * future task returns overdue: false,
 
-&#x20;  * task without due_date returns overdue: false.
+   * task without due_date returns overdue: false.
 
 
 
@@ -576,7 +576,7 @@ The AI also proposed focused backend tests for each overdue scenario and preserv
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -740,7 +740,7 @@ The implementation reused the `overdue` value already calculated by the backend 
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -766,9 +766,9 @@ Current state:
 
 
 
-&#x20; * Due Date
+  * Due Date
 
-&#x20; * Overdue pill
+  * Overdue pill
 
 * Drag-and-drop now correctly updates the local task object using the full backend response.
 
@@ -792,21 +792,21 @@ Requirements:
 
 
 
-&#x20;  * All Tasks (default)
+   * All Tasks (default)
 
-&#x20;  * Overdue Only
+   * Overdue Only
 
 3. When "All Tasks" is selected:
 
 
 
-&#x20;  * Display all tasks exactly as before.
+   * Display all tasks exactly as before.
 
 4. When "Overdue Only" is selected:
 
 
 
-&#x20;  * Display only tasks where `task.overdue === true`.
+   * Display only tasks where `task.overdue === true`.
 
 5. Do not calculate overdue in JavaScript.
 
@@ -964,7 +964,7 @@ The AI also preserved accurate visible task counts, kept empty Kanban columns di
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -1090,7 +1090,7 @@ It also recommended keeping the existing Overdue filter on the frontend because 
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -1130,11 +1130,11 @@ Requirements (follow exactly):
 
 
 
-&#x20; * search
+  * search
 
-&#x20; * status
+  * status
 
-&#x20; * priority
+  * priority
 
 * Search must be case-insensitive.
 
@@ -1208,7 +1208,7 @@ Before making any changes, explain:
 
 4. Any edge cases or risks.
 
-&#x20;  Do not apply any changes until after showing the explanation and proposed diff.
+   Do not apply any changes until after showing the explanation and proposed diff.
 
 
 
@@ -1306,7 +1306,7 @@ The AI also proposed focused tests for every individual filter, several combined
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -1354,7 +1354,7 @@ Requirements:
 
 1. Add a Status dropdown to the filter bar.
 
-&#x20;  Options:
+   Options:
 
 
 
@@ -1370,7 +1370,7 @@ Requirements:
 
 2. Add a Priority dropdown to the filter bar.
 
-&#x20;  Options:
+   Options:
 
 
 
@@ -1386,7 +1386,7 @@ Requirements:
 
 3. Modify fetchTasks() so it sends only the selected query parameters to:
 
-&#x20;  GET /tasks
+   GET /tasks
 
 
 
@@ -1488,25 +1488,25 @@ The initial AI proposal included a 300 ms debounce for the Search input. During 
 
 
 
-&#x20; * All Statuses
+  * All Statuses
 
-&#x20; * ToDo
+  * ToDo
 
-&#x20; * InProgress
+  * InProgress
 
-&#x20; * Done
+  * Done
 
 * Added a Priority dropdown with:
 
 
 
-&#x20; * All Priorities
+  * All Priorities
 
-&#x20; * Low
+  * Low
 
-&#x20; * Medium
+  * Medium
 
-&#x20; * High
+  * High
 
 
 
@@ -1576,7 +1576,7 @@ The initial AI proposal included a 300 ms debounce for the Search input. During 
 
 
 
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\__
+---
 
 
 
@@ -1749,7 +1749,7 @@ While reviewing the feature, I realised that implementing search alone would not
 
 
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
 
 
 
@@ -1761,7 +1761,7 @@ Each implementation step documented in this prompt log followed the same workflo
 
 
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
 
 
 

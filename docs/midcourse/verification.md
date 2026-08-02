@@ -1,11 +1,5 @@
-**# Verification**
-
-
-
-**## 1. Baseline Check**
-
-
-
+# Verification
+## 1. Baseline Check
 Before implementing Feature 1 (Due Dates and Overdue Support) and Feature 2 (Search and Combined Filtering), the application was verified to establish a stable baseline. This ensured that all subsequent changes could be measured against a known working version of the project.
 
 
@@ -51,7 +45,7 @@ Verification included:
 
 
 
-\*\*Result:\*\* Existing backend tests passed successfully before feature implementation.
+**Result:** Existing backend tests passed successfully before feature implementation.
 
 
 
@@ -75,14 +69,8 @@ This baseline established a reference point for regression testing after each im
 
 
 
-\---
-
-
-
-**# 2. Backend Test Results**
-
-
-
+---
+# 2. Backend Test Results
 Backend verification was performed throughout development using the existing FastAPI test suite together with newly added tests for implemented features.
 
 
@@ -170,20 +158,14 @@ Backend verification confirmed that:
 
 
 
-\*\*Pytest Result:\*\* All backend tests passed successfully.
+**Pytest Result:** All backend tests passed successfully.
 
 ======================================= 42 passed in 0.66s =======================================
 
 
 
-\---
-
-
-
-**# 3. Swagger API Verification**
-
-
-
+---
+# 3. Swagger API Verification
 Swagger UI (OpenAPI) was used throughout development to manually verify backend behaviour before frontend integration.
 
 
@@ -234,14 +216,8 @@ The following API operations were verified.
 
 
 
-\---
-
-
-
-**# 4. Manual Browser Verification**
-
-
-
+---
+# 4. Manual Browser Verification
 The frontend application was manually tested after each implementation step.
 
 
@@ -290,14 +266,8 @@ Regression testing was also performed after every completed implementation step 
 
 
 
-\---
-
-
-
-**# 5. Browser Developer Tools Verification**
-
-
-
+---
+# 5. Browser Developer Tools Verification
 Browser Developer Tools were used throughout implementation to inspect frontend behaviour and communication with the backend.
 
 
@@ -342,14 +312,8 @@ Developer Tools were used to confirm:
 
 
 
-\---
-
-
-
-**# 6. Behaviour Contract Verification**
-
-
-
+---
+# 6. Behaviour Contract Verification
 ## Before Refactor
 
 
@@ -413,23 +377,14 @@ Regression testing confirmed that introducing the new functionality did not nega
 
 
 
-\---
-
-
-
-**# 7. Break Testing:**
-
-
-
+---
+# 7. Break Testing:
 Break testing (negative and edge-case testing) was performed throughout development to verify that the application remained stable when functionality was intentionally disrupted. After each test, the original implementation was restored and the expected behaviour was re-verified.
 
 
 
-\---
-
-
-
-**### 7.1 Frontend Break Testing**:
+---
+### 7.1 Frontend Break Testing:
 
 *- Break Test 1 – Invalid Drag-and-Drop Status Transition*
 
@@ -439,11 +394,8 @@ Break testing (negative and edge-case testing) was performed throughout developm
 
 
 
-**## Break Test 1 – Frontend Overdue Filter Logic:**
-
-
-
-**\*\*Objective\***\*
+## Break Test 1 – Frontend Overdue Filter Logic:
+**Objective**
 
 
 
@@ -451,37 +403,37 @@ Verify that the application remains stable when the frontend overdue filter inte
 
 
 
-**\*\*Steps\***\*
+**Steps**
 
 
 
-1\. Temporarily modified the frontend overdue filter logic:
+1. Temporarily modified the frontend overdue filter logic:
 
-&#x20;
+ 
 
-&#x20;  return tasks.filter((task) => false);
+   return tasks.filter((task) => false);
 
-&#x20;
+ 
 
-2\. Reloaded the application.
+2. Reloaded the application.
 
-3\. Selected \*\*Filter → Overdue Only\*\*.
+3. Selected **Filter → Overdue Only**.
 
-4\. Observed the application behaviour.
+4. Observed the application behaviour.
 
-5\. Restored the original implementation:
+5. Restored the original implementation:
 
-&#x20;
+ 
 
-&#x20;  return tasks.filter((task) => task.overdue === true);
+   return tasks.filter((task) => task.overdue === true);
 
-&#x20;
+ 
 
-6\. Re-tested the \*\*Overdue Only\*\* filter.
+6. Re-tested the **Overdue Only** filter.
 
 
 
-**\*\*Expected Result\***\*
+**Expected Result**
 
 
 
@@ -492,7 +444,7 @@ Verify that the application remains stable when the frontend overdue filter inte
 
 
 
-**\*\*Actual Result\***\*
+**Actual Result**
 
 
 
@@ -501,23 +453,17 @@ Verify that the application remains stable when the frontend overdue filter inte
 
 
 
-\*\*Status\*\*
+**Status**
 
 
 
-\*\*PASS\*\*
+**PASS**
 
 
 
-\---
-
-
-
-**## Break Test 2 – Frontend Search Logic:**
-
-
-
-**\*\*Objective\***\*
+---
+## Break Test 2 – Frontend Search Logic:
+**Objective**
 
 
 
@@ -525,33 +471,33 @@ Verify that the application behaves safely when the frontend search condition in
 
 
 
-**\*\*Steps\***\*
+**Steps**
 
 
 
-1\. Temporarily modified the frontend search logic:
+1. Temporarily modified the frontend search logic:
 
-&#x20;  return false;
+   return false;
 
-2\. Reloaded the application.
+2. Reloaded the application.
 
-3\. Performed a search.
+3. Performed a search.
 
-4\. Observed the application behaviour.
+4. Observed the application behaviour.
 
-5\. Restored the original search implementation:
+5. Restored the original search implementation:
 
-&#x20;  title.includes(query) ||
+   title.includes(query) ||
 
-&#x20;  description.includes(query) ||
+   description.includes(query) ||
 
-&#x20;  assignee.includes(query)
+   assignee.includes(query)
 
-6\. Re-tested the search functionality.
+6. Re-tested the search functionality.
 
 
 
-**\*\*Expected Result\***\*
+**Expected Result**
 
 
 
@@ -563,7 +509,7 @@ Verify that the application behaves safely when the frontend search condition in
 
 
 
-**\*\*Actual Result\***\*
+**Actual Result**
 
 
 
@@ -572,23 +518,17 @@ Verify that the application behaves safely when the frontend search condition in
 
 
 
-\*\*Status\*\*
+**Status**
 
 
 
-\*\*PASS\*\*
+**PASS**
 
 
 
-\---
-
-
-
-**## Break Test 3 – Backend Status Filter Request:**
-
-
-
-\*\*Objective\*\*
+---
+## Break Test 3 – Backend Status Filter Request:
+**Objective**
 
 
 
@@ -596,25 +536,25 @@ Verify that the frontend correctly sends the selected Status filter to the backe
 
 
 
-\*\*Steps\*\*
+**Steps**
 
 
 
-1\. Temporarily modified the frontend request-building logic to prevent the Status query parameter from being added:
+1. Temporarily modified the frontend request-building logic to prevent the Status query parameter from being added:
 
-&#x20;  if (false \&\& activeStatusFilter !== 'all')
+   if (false && activeStatusFilter !== 'all')
 
-2\. Selected a Status filter in the application.
+2. Selected a Status filter in the application.
 
-3\. Observed the generated request using the browser Developer Tools (Network tab).
+3. Observed the generated request using the browser Developer Tools (Network tab).
 
-4\. Restored the original implementation.
+4. Restored the original implementation.
 
-5\. Re-tested the Status filter.
+5. Re-tested the Status filter.
 
 
 
-\*\*Expected Result\*\*
+**Expected Result**
 
 
 
@@ -624,7 +564,7 @@ Verify that the frontend correctly sends the selected Status filter to the backe
 
 
 
-\*\*Actual Result\*\*
+**Actual Result**
 
 
 
@@ -634,35 +574,25 @@ Verify that the frontend correctly sends the selected Status filter to the backe
 
 
 
-\*\*Status\*\*
+**Status**
 
 
 
-\*\*PASS\*\*
+**PASS**
 
 
 
-\---
-
-
-
-**### 7.2 Backend Break Testing:**
-
+---
+### 7.2 Backend Break Testing:
 *- Break Test 1 – Null Title Validation*
 
-*- Break Test 2 – \[Your second backend break test]*
+*- Break Test 2 – [Your second backend break test]*
 
 
 
-\---
-
-
-
-**### Break Test 1 – Null Title Validation:**
-
-
-
-\*\*Objective\*\*
+---
+### Break Test 1 – Null Title Validation:
+**Objective**
 
 
 
@@ -670,7 +600,7 @@ Verify that the backend regression tests detect when the `PATCH /tasks/{id}` end
 
 
 
-\*\*Break Introduced\*\*
+**Break Introduced**
 
 
 
@@ -682,7 +612,7 @@ The `TaskUpdate` title validator in `app/models.py` was intentionally modified f
 
 if value is None:
 
-\&#x20;   raise ValueError("title must not be null")
+    raise ValueError("title must not be null")
 
 ```
 
@@ -696,7 +626,7 @@ to:
 
 if value is None:
 
-\&#x20;   return value
+    return value
 
 ```
 
@@ -706,19 +636,19 @@ This temporarily allowed an invalid `null` title to reach the backend storage an
 
 
 
-\*\*Command Run\*\*
+**Command Run**
 
 
 
 ```powershell
 
-python -m pytest tests/test\\\_tasks.py -k "patch\\\_title\\\_null" -v
+python -m pytest tests/test_tasks.py -k "patch_title_null" -v
 
 ```
 
 
 
-\*\*Expected Result\*\*
+**Expected Result**
 
 
 
@@ -726,7 +656,7 @@ The regression tests should fail because the backend no longer rejects `title: n
 
 
 
-\*\*Observed Result\*\*
+**Observed Result**
 
 
 
@@ -742,7 +672,7 @@ Pytest selected the two regression tests related to null title validation. Both 
 
 
 
-\*\*Recovery\*\*
+**Recovery**
 
 
 
@@ -754,7 +684,7 @@ The original validation rule was restored:
 
 if value is None:
 
-\&#x20;   raise ValueError("title must not be null")
+    raise ValueError("title must not be null")
 
 ```
 
@@ -764,7 +694,7 @@ The same pytest command was executed again.
 
 
 
-\*\*Final Result\*\*
+**Final Result**
 
 
 
@@ -780,23 +710,17 @@ Both regression tests passed successfully after restoring the correct validation
 
 
 
-\*\*Status\*\*
+**Status**
 
 
 
-\*\*PASS – The intentionally introduced backend defect was successfully detected by the regression tests, the implementation was restored, and the tests passed again.\*\*
+**PASS – The intentionally introduced backend defect was successfully detected by the regression tests, the implementation was restored, and the tests passed again.**
 
 
 
-\----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-**### Break Test 2 – Backend Overdue Calculation**
-
-
-
-\*\*Objective\*\*
+---
+### Break Test 2 – Backend Overdue Calculation
+**Objective**
 
 
 
@@ -804,41 +728,41 @@ Verify that the backend overdue tests detect an incorrect overdue calculation an
 
 
 
-\*\*Break Introduced\*\*
+**Break Introduced**
 
 
 
-The `\_compute\_overdue()` function in `app/storage.py` was intentionally modified to always return `False`:
+The `_compute_overdue()` function in `app/storage.py` was intentionally modified to always return `False`:
 
 
 
 ```python
 
-def \_compute\_overdue(task\_status: TaskStatus, due\_date: Optional\[date]) -> bool:
+def _compute_overdue(task_status: TaskStatus, due_date: Optional[date]) -> bool:
 
-&#x20;   return False
+    return False
 
 ```
 
 
 
-This intentionally caused every task to be reported as \*\*not overdue\*\*, regardless of its due date or status.
+This intentionally caused every task to be reported as **not overdue**, regardless of its due date or status.
 
 
 
-\*\*Command Run\*\*
+**Command Run**
 
 
 
 ```powershell
 
-python -m pytest tests/test\_tasks.py -k "overdue" -v
+python -m pytest tests/test_tasks.py -k "overdue" -v
 
 ```
 
 
 
-\*\*Expected Result\*\*
+**Expected Result**
 
 
 
@@ -846,7 +770,7 @@ Tests expecting past-due `ToDo` and `InProgress` tasks to return `overdue: true`
 
 
 
-\*\*Observed Result\*\*
+**Observed Result**
 
 
 
@@ -858,11 +782,11 @@ Three tests failed because past-due tasks that should have been reported as over
 
 
 
-\- `test\_create\_task\_returns\_overdue\_flag\_based\_on\_due\_date\_and\_status\[ToDo-...-True]`
+- `test_create_task_returns_overdue_flag_based_on_due_date_and_status[ToDo-...-True]`
 
-\- `test\_create\_task\_returns\_overdue\_flag\_based\_on\_due\_date\_and\_status\[InProgress-...-True]`
+- `test_create_task_returns_overdue_flag_based_on_due_date_and_status[InProgress-...-True]`
 
-\- `test\_list\_and\_get\_task\_return\_overdue\_flag`
+- `test_list_and_get_task_return_overdue_flag`
 
 
 
@@ -870,13 +794,13 @@ Four tests continued to pass because their expected result was already `overdue:
 
 
 
-\- A completed (`Done`) task with a past due date
+- A completed (`Done`) task with a past due date
 
-\- A task due today
+- A task due today
 
-\- A task due tomorrow
+- A task due tomorrow
 
-\- A task with no due date
+- A task with no due date
 
 
 
@@ -892,7 +816,7 @@ This demonstrated that the test suite correctly distinguished between scenarios 
 
 
 
-\*\*Recovery\*\*
+**Recovery**
 
 
 
@@ -902,13 +826,13 @@ The original overdue calculation was restored:
 
 ```python
 
-def \_compute\_overdue(task\_status: TaskStatus, due\_date: Optional\[date]) -> bool:
+def _compute_overdue(task_status: TaskStatus, due_date: Optional[date]) -> bool:
 
-&#x20;   if due\_date is None or task\_status == TaskStatus.DONE:
+    if due_date is None or task_status == TaskStatus.DONE:
 
-&#x20;       return False
+        return False
 
-&#x20;   return due\_date < date.today()
+    return due_date < date.today()
 
 ```
 
@@ -918,7 +842,7 @@ The same pytest command was executed again.
 
 
 
-\*\*Final Result\*\*
+**Final Result**
 
 
 
@@ -934,22 +858,16 @@ All seven overdue-related tests passed successfully after restoring the correct 
 
 
 
-\*\*Status\*\*
+**Status**
 
 
 
-\*\*PASS – The intentionally introduced backend defect was successfully detected by the automated pytest suite, the original overdue calculation was restored, and all related tests passed after verification.\*\*
+**PASS – The intentionally introduced backend defect was successfully detected by the automated pytest suite, the original overdue calculation was restored, and all related tests passed after verification.**
 
 
 
-\-------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-**# 8. Overall Verification Summary**
-
-
-
+---
+# 8. Overall Verification Summary
 Each implementation step followed the same structured workflow:
 
 

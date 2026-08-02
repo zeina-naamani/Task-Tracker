@@ -25,7 +25,7 @@ Throughout development, AI suggested multiple implementation approaches. Each su
 
 ## Decision
 
-An optional `due\_date` field was added to the task model. The backend calculates the `overdue` value whenever task data is returned instead of storing it as part of the task.
+An optional `due_date` field was added to the task model. The backend calculates the `overdue` value whenever task data is returned instead of storing it as part of the task.
 
 ## Why This Decision Was Made
 
