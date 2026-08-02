@@ -48,7 +48,7 @@ def test_patch_existing_task_with_valid_due_date_returns_200_and_updates_due_dat
         json={"due_date": "2026-08-15"},
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json()["due_date"] == "2026-08-15"
 
 
