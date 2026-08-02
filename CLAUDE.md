@@ -12,8 +12,8 @@ Task Tracker is a learning project (AI Assisted Coding course) built as a Kanban
 - FastAPI 0.115.6
 - Pydantic v2 (2.10.3)
 - Uvicorn 0.32.1
-- pytest — used by the test suite (`pytest.ini`, `tests/`) but **not** listed in `requirements.txt`; installed separately in this environment (pytest 9.1.1 found via `pip show`). [VERIFY] whether an intentional/pinned version is expected
-- httpx — required transitively by FastAPI's `TestClient` (used in `tests/conftest.py`); **not** listed in `requirements.txt`; installed separately in this environment (httpx 0.28.1 found via `pip show`). [VERIFY] whether an intentional/pinned version is expected
+- pytest 9.1.1 — used by the test suite (`pytest.ini`, `tests/`); installed in the project's `.venv` but **not** pinned anywhere in the repo (not in `requirements.txt`, no `requirements-dev.txt` or CI config present)
+- httpx 0.28.1 — required transitively by FastAPI's `TestClient` (used in `tests/conftest.py`); installed in the project's `.venv` but **not** pinned anywhere in the repo, same as pytest
 - Vanilla JavaScript frontend present: `frontend/index.html` (single file, no framework, no build step)
 
 Note: `requirements.txt` is UTF-16 encoded; reading it with tools that assume UTF-8 will show garbled/spaced-out characters.
@@ -33,11 +33,11 @@ pytest -v
 ## Architecture
 
 **Backend** (`app/`):
-- `app/main.py` — FastAPI route handlers only; no business logic lives here. Endpoints: `GET /health`, `GET /tasks`, `GET /tasks/{task_id}`, `POST /tasks`, `PATCH /tasks/{task_id}`, `DELETE /tasks/{task_id}`.
+- `app/main.py` — route handlers; validation/transition rules live in `business_rules.py`, not here, but the `PATCH /tasks/{task_id}` handler does compose the fetch-then-validate-then-update sequence itself (conditionally fetches the existing task and calls `validate_status_transition` only when `status` is present in the payload). Endpoints: `GET /health`, `GET /tasks`, `GET /tasks/{task_id}`, `POST /tasks`, `PATCH /tasks/{task_id}`, `DELETE /tasks/{task_id}`.
 - `app/models.py` — Pydantic schemas and enums. `TaskCreate`/`TaskUpdate` are input models (`extra="forbid"`, so unknown fields 422); `TaskResponse` is the output model. `TaskStatus` (`ToDo`/`InProgress`/`Done`) and `TaskPriority` (`Low`/`Medium`/`High`) are string enums. Title validation (non-blank, ≤200 chars) lives in a shared `_validate_title` helper.
 - `app/storage.py` — in-memory `dict[str, dict]` keyed by UUID string, plus CRUD functions (`add_task`, `get_all_tasks`, `get_task_by_id`, `update_task`, `delete_task`) and a `_reset()` used by tests. Search/filter logic for `GET /tasks` (case-insensitive substring match on title/description/assignee, plus optional status/priority equality filters) lives here, not in the route handler.
 - `app/business_rules.py` — `validate_status_transition()`, the sole location of status-transition rules, independent of storage.
-- `app/api/`, `app/schemas/`, `app/services/` — [VERIFY] not re-inspected in this pass; not read to confirm current contents.
+- `app/api/`, `app/schemas/`, `app/services/` — empty placeholder packages (each contains only an `__init__.py`, verified); don't assume routes/schemas live there.
 
 **Frontend**:
 - `frontend/index.html` — single-file HTML/CSS/JS Kanban board (To Do / In Progress / Done columns, drag-and-drop). Calls the API via a hardcoded `BASE_URL = 'http://localhost:8000'`, so the backend must already be running.
@@ -45,7 +45,7 @@ pytest -v
 **Tests** (`tests/`):
 - `tests/conftest.py` — `client` (`TestClient(app)`), `created_task` fixture (creates a default task via the API), and an autouse `_reset_storage` fixture that clears in-memory storage before/after every test.
 - `tests/test_tasks.py` — main pytest suite.
-- `tests/verify_a.py` — [VERIFY] not re-inspected in this pass; prior version of this file described it as a standalone manual script, not part of the pytest suite.
+- `tests/verify_a.py` — standalone manual script (print-based `expect_ok`/`expect_fail` helpers, no `pytest` import, no `test_*` functions), not part of the pytest suite; ad hoc validation of `app/models.py` behavior, run directly with `python tests/verify_a.py`.
 
 **Where task rules live**: status-transition validation is entirely in `app/business_rules.py`; the "overdue" rule is entirely in `app/storage.py` (`_compute_overdue`), computed on every read and never persisted.
 
