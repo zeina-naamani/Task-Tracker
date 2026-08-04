@@ -1,0 +1,472 @@
+# Module 4 — Cumulative Prompt Log
+
+This log records every significant AI interaction contributing to Module 4 deliverables. Entries are appended in order and never overwritten or removed.
+
+---
+
+## Entry 1
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Confirm the backend test suite passes before doing further Module 4 work.
+
+**Prompt (verbatim):** "run pytest -v and show me the output."
+
+**Response summary:** Discovered the project venv's `pytest` was not on PATH, ran it directly via `.venv/Scripts/pytest.exe -v` instead. All 44 tests in `tests/test_tasks.py` passed in 2.47s.
+
+**Files read/modified:** None modified. Test discovery touched `tests/conftest.py`, `tests/test_tasks.py`.
+
+**Commands executed:**
+- `pytest -v` (failed: `ModuleNotFoundError: No module named 'fastapi'`)
+- `./.venv/Scripts/pytest.exe -v` (succeeded: 44 passed)
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Baseline confirmed green (44/44 passing) before proceeding with Module 4 analysis.
+
+---
+
+## Entry 2
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Inventory the backend's exposed HTTP routes.
+
+**Prompt (verbatim):** "list the routes from app/main.py only"
+
+**Response summary:** Listed all six route decorators found in `app/main.py`: `GET /health`, `GET /tasks`, `GET /tasks/{task_id}`, `POST /tasks`, `PATCH /tasks/{task_id}`, `DELETE /tasks/{task_id}`, with their handler function names.
+
+**Files read/modified:** Read `app/main.py`.
+
+**Commands executed:** None (used Grep/Read tools, not shell commands).
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Route inventory established as a reference point for subsequent model/status-code analysis.
+
+---
+
+## Entry 3
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Document request/response models for each route.
+
+**Prompt (verbatim):** "show the request/response models for each route"
+
+**Response summary:** Produced a table mapping each route to its request model (`TaskCreate`, `TaskUpdate`, or none) and response model (`TaskResponse`, `list[TaskResponse]`, plain dict, or none), plus a field-by-field breakdown of `TaskCreate`, `TaskUpdate`, and `TaskResponse`.
+
+**Files read/modified:** Read `app/models.py` (in addition to the previously read `app/main.py`).
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Full request/response model documentation captured for Module 4 reference.
+
+---
+
+## Entry 4
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Produce an evidence-based, citation-backed answer (with explicit `[VERIFY]` flags for unconfirmed claims) about exposed endpoints/status codes and status-transition rules, using only `app/main.py` and `app/models.py` as sources.
+
+**Prompt (verbatim):** "Read @app/main.py and @app/models.py. \nTask: \nAnswer these two questions using only evidence from those files: \n1. What endpoints does the Task Tracker expose, and what status codes do they return where visible? \n2. What task status values and transition rules are implemented? \nConstraints: - Do not rely on memory or guesses from CLAUDE.md alone. - Cite the file and function/model name for each claim. - If a behavior is unclear, mark it [VERIFY] instead of guessing. \nOutput format: \nReturn a table with columns: Claim, Evidence file/function, Confidence, What I should manually check."
+
+**Response summary:** Produced a 10-row table covering all six endpoints and their status codes (mostly explicit in code, two default-200 cases noted), the three `TaskStatus` enum values, and the `TaskCreate`/`TaskUpdate` status field defaults. Flagged claims #6 and #10 as `[VERIFY]` because `validate_status_transition`'s actual rule logic and error status code live in `app/business_rules.py`, which was outside the two files the task restricted analysis to — declined to guess from CLAUDE.md.
+
+**Files read/modified:** Read `app/main.py`, `app/models.py`. Explicitly did not read `app/business_rules.py` per task constraints.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry (verification happened in Entry 6).
+
+**Outcome / conclusion:** Delivered a citation-backed claims table with two claims correctly flagged `[VERIFY]` rather than asserted from inference.
+
+---
+
+## Entry 5
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Identify which flagged claims the user had independently verified, as a precursor to producing a "verified interaction" note.
+
+**Prompt (verbatim):** "Now ask me which two claims I manually verified, and help me turn them into a short "verified interaction" note for my Module 4 \ndeliverables."
+
+**Response summary:** Asked the user which two claims from the Entry 4 table they had manually verified (offered claim #6, claim #10, or other, via a clarifying question).
+
+**Files read/modified:** None.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry (answered in Entry 6).
+
+**Outcome / conclusion:** Clarifying question asked; awaited user's answer before drafting the note.
+
+---
+
+## Entry 6
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Draft a "verified interaction" note documenting the user's manual verification of claims #6 and #10 against `app/business_rules.py`.
+
+**Prompt (verbatim):** "I manually verified Claim #6 and Claim #10 by reading app/business_rules.py.\n\nFor Claim #6, I confirmed that update_task() calls validate_status_transition(existing.status, payload.status), and verified the resulting behavior and exception handling in app/business_rules.py.\n\nFor Claim #10, I confirmed the actual allowed and disallowed status transitions directly from app/business_rules.py instead of relying on inference from app/main.py."
+
+**Response summary:** Read `app/business_rules.py` to confirm the user's claims independently, then produced a "Verified Interaction Note" documenting: (6) `validate_status_transition` raises `HTTPException(422, ...)` on an invalid transition and is a same-status no-op otherwise; (10) the exact `VALID_TRANSITIONS` set — `ToDo → InProgress`, `InProgress → Done`, `Done → InProgress` — with all other transitions rejected. Included a rationale on why the earlier `[VERIFY]` flags were appropriate.
+
+**Files read/modified:** Read `app/business_rules.py`.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** User manually read `app/business_rules.py` and confirmed: (a) `validate_status_transition` call site and exception behavior (Claim #6); (b) the exact allowed/disallowed status transitions in `VALID_TRANSITIONS` (Claim #10).
+
+**Outcome / conclusion:** Verified Interaction Note drafted and cross-checked by AI against the same source file the user cited, corroborating the user's manual findings.
+
+---
+
+## Entry 7
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Persist the Verified Interaction Note as a Module 4 deliverable file.
+
+**Prompt (verbatim):** "Save this note to a file in the repo"
+
+**Response summary:** Checked repo structure (`docs/midcourse/` existed as a precedent for module deliverable docs; no `docs/module4/` folder yet), then created `docs/module4/verified-interaction.md` containing the note from Entry 6.
+
+**Files read/modified:** Read `docs/` directory listing and `docs/midcourse/verification.md` (for naming/format precedent). Created `docs/module4/verified-interaction.md`.
+
+**Commands executed:**
+- `ls` (repo root)
+- `ls docs`
+- `ls docs/midcourse`
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** `docs/module4/verified-interaction.md` created successfully with the confirmed claims #6 and #10.
+
+---
+
+## Entry 8
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Establish a cumulative, append-only prompt log for all significant Module 4 interactions going forward.
+
+**Prompt (verbatim):** "For Module 4, maintain a cumulative prompt log in:\n\ndocs/module4/module4_prompt_log.md\n\nAfter every significant interaction in this session:\n\n- Append (do not overwrite) a new numbered entry.\n- Record:\n  1. Date/Time (if available)\n  2. Objective\n  3. My prompt (verbatim)\n  4. A concise summary of your response (not necessarily the full response unless I explicitly request it)\n  5. Any files you read or modified\n  6. Any commands you suggested or executed\n  7. Any manual verification I performed\n  8. Outcome / conclusion\n\nDo not log casual conversation. Only log interactions that contribute to the Module 4 deliverables or implementation.\n\nAt the end of each logged interaction, automatically update module4_prompt_log.md while preserving all previous entries."
+
+**Response summary:** Created `docs/module4/module4_prompt_log.md`, backfilled with Entries 1–7 reconstructing every significant Module 4 interaction earlier in this session, and established this entry (8) as the point from which the log will be appended after each future significant interaction, per the standing instruction.
+
+**Files read/modified:** Created `docs/module4/module4_prompt_log.md`. Checked `docs/module4/` directory listing.
+
+**Commands executed:**
+- `ls docs/module4`
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Cumulative prompt log established and backfilled; standing instruction acknowledged to append future significant interactions here without overwriting prior entries.
+
+---
+
+## Entry 9
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Update the Module 4 logging workflow to require a preview of the entry plus explicit Yes/No approval before any write to the log file.
+
+**Prompt (verbatim):** "For Module 4, continue using:\n\ndocs/module4/module4_prompt_log.md\n\nAfter each significant Module 4 interaction, ask me:\n\n\"Save this interaction to the Module 4 prompt log? (Yes/No)\"\n\nRules:\n- If I answer Yes, append a new numbered entry to the existing file.\n- If I answer No, do not modify the file.\n- Never overwrite or delete previous entries.\n- Do not log casual conversation.\n- Before saving, briefly show what will be recorded:\n  - Objective\n  - My prompt\n  - Summary of your response\n  - Files read or modified\n  - Commands suggested or executed\n  - Manual verification performed\n  - Outcome\n- Wait for my approval before writing the entry."
+
+**Response summary:** Acknowledged the new workflow. Presented a preview block (objective, verbatim prompt, response summary, files, commands, manual verification, outcome) for this very interaction and asked "Save this interaction to the Module 4 prompt log? (Yes/No)" before writing anything.
+
+**Files read/modified:** None (pending user approval at preview stage).
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** User approved ("Yes"). Approval-gated logging workflow adopted going forward: every future significant Module 4 interaction will be previewed and require explicit Yes/No approval before being appended.
+
+---
+
+## Entry 10
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Plan (without implementing) a future `GET /version` endpoint, and preview the exact diff and test plan for it, under a strict "plan only, do not edit files" constraint.
+
+**Prompt (verbatim):**
+1. "Plan only. Do not edit files. I may later add a GET /version endpoint to the Task Tracker, but for now I only want a plan. Read @app/main.py and tell me: 1. Which file would need to change. 2. The smallest route you would add. 3. Whether tests should be added or updated. 4. What command I should run to verify it. 5. What risks or scope creep to avoid. Constraints: - Do not modify any file. - Do not add dependencies. - Do not add Docker, CI, auth, database, or frontend changes. Output format: Return a numbered plan and wait for approval."
+2. "Before editing, show me the exact diff you would apply and explain how I would test it."
+3. "Save this interaction to the Module 4 prompt log."
+4. "Exit plan mode and save this interaction to docs/module4/module4_prompt_log.md only. Do not apply the /version endpoint changes or modify any project source files."
+5. "Do not execute this plan. Save only the planning interaction to docs/module4/module4_prompt_log.md. Do not modify any project files."
+6. "Exit plan mode. Save only this planning interaction to docs/module4/module4_prompt_log.md. Do not apply the /version endpoint changes or modify app/main.py, tests/test_tasks.py, or any other project file."
+7. "Append the planning interaction we just completed to docs/module4/module4_prompt_log.md. Do not modify any project source files."
+
+**Response summary:** Read `app/main.py` and grepped `tests/test_tasks.py` (confirmed no existing `/health` test as precedent). Wrote a plan to the plan mode plan file: only `app/main.py` needs to change; smallest route is `GET /version` returning `{"version": app.version}` (reusing the existing `app.version` field, no new model); tests should be added (new, not updating existing); verify via `pytest -v` plus manual `curl http://localhost:8000/version`; risks flagged were duplicating the version string, adding an unnecessary response model, scope-creeping into a richer system-info endpoint, and touching the frontend. When the user rejected `ExitPlanMode` and asked to see the diff first, presented the exact unified diff for `app/main.py` (new `/version` route) and `tests/test_tasks.py` (new test function) plus the verification steps, without applying either. When asked to save this interaction to the log, surfaced the plan-mode restriction (only the plan file was editable) and asked the user how to proceed via `AskUserQuestion`; user chose "exit plan mode, log only." Multiple subsequent `ExitPlanMode` calls were declined at the tool level despite clear user instructions; after three declined attempts, stopped retrying and explained the impasse plainly rather than assuming a workaround. Once the harness confirmed plan mode was actually exited, appended this entry to the log and touched no other file.
+
+**Files read/modified:** Read `app/main.py`; grepped `tests/test_tasks.py`. Wrote/updated the plan file at `C:\Users\hp\.claude\plans\plan-only-do-not-floating-gem.md` (outside the repo). Modified only `docs/module4/module4_prompt_log.md` in the repo — `app/main.py` and `tests/test_tasks.py` were **not** modified; the `/version` diff was shown but never applied.
+
+**Commands executed:** None (only Read/Grep tools used; no shell commands, no edits to source files).
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** A complete, unapplied plan for `GET /version` (target file, route, test strategy, verify command, risks, and exact diff) is documented here for future implementation. No source files were changed. This entry was appended only after plan mode was genuinely exited (confirmed by the harness), consistent with the standing instruction to never modify project files while plan-only constraints were in effect.
+
+---
+
+## Entry 11
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Create a CI workflow (`.github/workflows/ci.yml`) for the Module 4 Task Tracker that runs pytest on push/PR, with no deployment steps and no failure-hiding mechanisms.
+
+**Prompt (verbatim, across turns):**
+1. "Create .github/workflows/ci.yml for the Module 4 Task Tracker. Project context: - Python 3.11 FastAPI backend. - Tests run with pytest -v. - Dependencies are installed from requirements.txt. - This module is not deploying the app. Requirements: - Run on push and pull_request. - Use actions/checkout and actions/setup-python. - Use Python 3.11, not latest or an unspecified version. - Install dependencies with python -m pip install --upgrade pip and pip install -r requirements.txt. - Run pytest -v. - Do not include deployment steps. - Do not use continue-on-error. - Do not use || true. - Do not use --exit-zero. - Do not hide pytest failures behind pipes or summary steps. Constraints: - Show me the diff before applying. - If .github/workflows does not exist, create it at the repository root, not inside app/ or another subfolder. Output format: First summarize the workflow. Then show the YAML diff."
+2. "it should be a different python version as my project file says right?"
+3. "use 3.11 as requested by my instructor instead"
+
+**Response summary:** Verified `.github/workflows` did not exist and `requirements.txt` was present at repo root. Presented a workflow summary and diff using Python 3.11 per the stated requirements, while flagging that CLAUDE.md/`.venv/pyvenv.cfg` records the project's actual Python version as 3.13.7. When the user questioned this, confirmed the 3.13.7 discrepancy directly and showed a revised diff using 3.13. User then clarified the instructor specifically requires 3.11 for this deliverable, overriding the project's actual version. Created `.github/workflows/ci.yml` with `python-version: "3.11"`, `actions/checkout@v4`, `actions/setup-python@v5`, pip upgrade, `pip install -r requirements.txt`, and `pytest -v` with no deployment steps and no failure-suppression mechanisms.
+
+**Files read/modified:** Read `.venv/pyvenv.cfg` (to confirm actual Python version). Checked for `.github/workflows` and `requirements.txt` existence. Created `.github/workflows/ci.yml`.
+
+**Commands executed:**
+- `ls` checks for `.github`, `.github/workflows`, `requirements.txt`
+- `cat .venv/pyvenv.cfg`
+- `mkdir -p .github/workflows`
+
+**Manual verification performed by user:** User caught and corrected the Python-version discrepancy before the file was written (questioned 3.11 vs. project's 3.13, then confirmed instructor requires 3.11).
+
+**Outcome / conclusion:** `.github/workflows/ci.yml` created at repo root with Python 3.11 per instructor requirement, despite differing from the project's actual 3.13.7 venv — deliberate, user-confirmed choice, documented here for traceability.
+
+---
+
+## Entry 12
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Line-by-line review of `.github/workflows/ci.yml` to confirm no line could let a test failure pass silently, before the user commits it.
+
+**Prompt (verbatim):** "Before I commit this, review the YAML line by line and tell me whether any line could allow tests to fail while the workflow still passes."
+
+**Response summary:** Re-read `.github/workflows/ci.yml` in full and checked `pytest.ini` for any `addopts` that might interfere with pytest's exit code (found only `pythonpath = .`, no exit-code-affecting options). Walked every line of the workflow in a table, confirming: no job-level `continue-on-error`; no step-level `continue-on-error`, `|| true`, `--exit-zero`, or pipe/summary step around the `pytest -v` step; GitHub Actions' default Linux shell (`bash -eo pipefail`) means pytest's exit code propagates directly to step/job/workflow failure. Concluded no line allows a test failure to be masked as a passing workflow, safe to commit as-is.
+
+**Files read/modified:** Read `.github/workflows/ci.yml`, `pytest.ini`. No files modified.
+
+**Commands executed:**
+- `cat pytest.ini`
+
+**Manual verification performed by user:** Requested this review as a pre-commit check; no additional independent verification recorded beyond the review itself for this entry.
+
+**Outcome / conclusion:** Workflow confirmed safe from failure-masking on every line; user proceeding to commit `.github/workflows/ci.yml` as reviewed.
+
+---
+
+## Entry 13
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Determine and add the minimum additional packages `requirements.txt` needs so `pytest -v` runs successfully in the new GitHub Actions CI workflow.
+
+**Prompt (verbatim, across turns):**
+1. "Read tests/ and the CI workflow. Determine the minimum additional packages required in requirements.txt so GitHub Actions can run pytest -v successfully. Show me the diff before applying. Do not add packages that are not actually required by this project."
+2. "Yes, apply it"
+
+**Response summary:** Read `tests/conftest.py` and `tests/test_tasks.py`, confirming direct `import pytest` and `TestClient` usage (httpx-backed). Inspected `requirements.txt` raw bytes, confirming UTF-16 LE with BOM and CRLF line endings. Checked installed versions in `.venv` (`pytest==9.1.1`, `httpx==0.28.1`), matching CLAUDE.md's documented-but-unpinned versions. Determined the minimum required additions were exactly these two packages — sub-dependencies (`certifi`, `httpcore`, `iniconfig`, `packaging`, `pluggy`, `pygments`) are resolved automatically by pip and don't need explicit entries. Presented a diff inserting both packages alphabetically. On approval, rewrote `requirements.txt` via a Python script to preserve the original UTF-16 LE + BOM + CRLF encoding exactly (rather than risk a silent encoding change from a generic file write), then verified with `pip install --dry-run -r requirements.txt` that all packages resolve.
+
+**Files read/modified:** Read `tests/conftest.py`, `tests/test_tasks.py`, `requirements.txt` (raw bytes + decoded), `.github/workflows/ci.yml` context from prior entries. Modified `requirements.txt`.
+
+**Commands executed:**
+- `pip show pytest httpx` (in `.venv`) — confirmed installed versions
+- Python one-liner to decode/inspect UTF-16 bytes of `requirements.txt`
+- Python one-liner to rewrite `requirements.txt` with the two new lines, preserving UTF-16 LE + BOM + CRLF
+- `pip install --dry-run -r requirements.txt` — confirmed all packages resolve without conflicts
+
+**Manual verification performed by user:** None recorded for this entry beyond approving the diff.
+
+**Outcome / conclusion:** `requirements.txt` now includes `httpx==0.28.1` and `pytest==9.1.1`, the minimum packages needed for the CI workflow's `pytest -v` step to succeed on a fresh runner, with encoding preserved and dry-run verified.
+
+---
+
+## Entry 14
+
+**Date/Time:** 2026-08-02 (time not captured)
+
+**Objective:** Verify the local test suite still passes after updating `requirements.txt` with `pytest`/`httpx`.
+
+**Prompt (verbatim):** "pytest -v"
+
+**Response summary:** Ran `pytest -v` via `.venv/Scripts/pytest.exe`. All 44 tests in `tests/test_tasks.py` passed in 0.70s, confirming the `requirements.txt` change (Entry 13) didn't disrupt the local environment.
+
+**Files read/modified:** None modified. Test discovery touched `tests/conftest.py`, `tests/test_tasks.py`.
+
+**Commands executed:**
+- `.venv/Scripts/pytest.exe -v` (44 passed)
+
+**Manual verification performed by user:** User manually ran `pytest -v` and confirmed all 44 tests passed locally, verifying the `requirements.txt` change did not break the test suite.
+
+**Outcome / conclusion:** Local baseline reconfirmed green (44/44) after the CI-related `requirements.txt` change, manually verified by the user.
+
+---
+
+## Entry 15
+
+**Date/Time:** 2026-08-03 (time not captured)
+
+**Objective:** Nine-point CI safety review of `.github/workflows/ci.yml` for Module 4 (triggers, Python pin, test execution, failure-masking patterns, deployment scope, file location).
+
+**Prompt (verbatim):** "Review @.github/workflows/ci.yml for Module 4 CI safety. Task: Check for these issues: 1. Missing push or pull_request trigger. 2. Python version not pinned to 3.11. 3. Workflow installed dependencies but never runs pytest. 4. continue-on-error. 5. || true. 6. --exit-zero. 7. pytest output piped in a way that can hide the exit code. 8. Deployment steps that do not belong in this module. 9. Workflow file located in the wrong folder. Constraints: - Do not rewrite the file unless you find an issue. - If you suggest an edit, explain the exact risk first. Output format: Return a table with columns: Check, Pass/Concern, Evidence, Minimal fix."
+
+**Response summary:** Reviewed `.github/workflows/ci.yml` against all 9 checks. All 9 passed — no missing triggers, Python pinned to `"3.11"`, `pytest -v` runs after dependency install, no `continue-on-error`/`|| true`/`--exit-zero`, no output piping around pytest, no deployment steps, file correctly located at repo root. No edits applied, per the "don't rewrite unless an issue is found" constraint.
+
+**Files read/modified:** Read `.github/workflows/ci.yml` (from prior session context; file unchanged since Entry 11). No files modified.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** `.github/workflows/ci.yml` confirmed safe on all 9 checked dimensions; no changes needed.
+
+---
+
+## Entry 16
+
+**Date/Time:** 2026-08-03 (time not captured)
+
+**Objective:** Produce and save a CI green→red→green verification checklist and evidence log documenting the user's manual CI verification process (baseline pass, intentional break, restore-and-pass), with real commit references and GitHub Actions run URLs.
+
+**Prompt (verbatim, across turns):**
+1. "I already completed the green -> red -> green CI verification manually. Summary: - Initial GitHub Actions run passed. - I intentionally changed one test assertion (expected 200 -> 201), committed and pushed it, and GitHub Actions failed. - I restored the assertion (201 -> 200), committed and pushed again, and GitHub Actions passed. Using that as context, do not ask me to repeat the verification. Instead, produce the requested checklist and evidence log template documenting the process."
+2. "Update the CI verification log with the actual GitHub Actions run URLs. Replace the placeholders with these links only. Do not change any other content. Green #1 (Initial passing run): ... URL: https://github.com/zeina-naamani/Task-Tracker/actions/runs/30766159871 Red (Intentional failing run): ... URL: https://github.com/zeina-naamani/Task-Tracker/actions/runs/30766460682 Green #2 (Restored passing run): ... URL: https://github.com/zeina-naamani/Task-Tracker/actions/runs/30766621624 After updating the file, show me the diff before saving it, then ask whether I want to save this interaction to the Module 4 prompt log."
+3. "I'd like to rename the file to: docs/module4/ci-green-red-green-verification.md. Also, remove the stray </parameter> tag from the Conclusion section. Do not change anything else. Show me the diff after those two changes before saving. Then ask whether I want to save the file and save this interaction to the Module 4 prompt log."
+4. "Yes to both"
+
+**Response summary:** Read `git log`/`git show` to pull verified evidence for three commits — `f518b7c` (CI workflow added), `dd0badb` (intentional test break, 200→201), `1a8696c` (restore, 201→200) — with exact dates and diffs, since `gh` CLI was unavailable in this environment to pull run data directly. Produced a checklist table and an evidence log template in chat with placeholder run URLs. When the user supplied the three actual GitHub Actions run URLs, replaced only those placeholders, leaving all other content unchanged, and showed the diff as a new-file creation. When the user requested a filename change and removal of a stray `</parameter>` tag artifact from the previous message, applied both changes and re-showed the diff. On final approval, created `docs/module4/ci-green-red-green-verification.md` with the complete evidence log (real commit hashes, dates, diffs, and GitHub Actions run URLs).
+
+**Files read/modified:** Read `git log`, `git show f518b7c/dd0badb/1a8696c`. Created `docs/module4/ci-green-red-green-verification.md`.
+
+**Commands executed:**
+- `git log --oneline -6`
+- `git show f518b7c --stat`
+- `git show dd0badb`
+- `git show 1a8696c`
+- `gh --version` / `gh run list` (both failed: `gh` not found in this environment)
+- `ls docs/module4/` (confirmed the file did not already exist before creation)
+
+**Manual verification performed by user:** User manually performed the entire green→red→green CI verification outside this session (intentional test break, push, observed red run; restore, push, observed green run) and supplied the three real GitHub Actions run URLs as evidence.
+
+**Outcome / conclusion:** `docs/module4/ci-green-red-green-verification.md` created, documenting the full CI verification cycle with real commit references and GitHub Actions run URLs as Module 4 evidence.
+
+---
+
+## Entry 17
+
+**Date/Time:** 2026-08-03 (time not captured)
+
+**Objective:** Produce a planning-only, safe green→red→green CI proof checklist and evidence log template (no edits applied), and compare it against the verification the user had already completed.
+
+**Prompt (verbatim):** "I already completed the green -> red -> green verification successfully. Do not repeat or apply any edits. Use the current repository state to produce the requested pre-execution checklist and compare it with what was actually completed. Help me plan the Module 4 CI proof without making edits yet. Current state: - The GitHub Actions workflow exists. - I need evidence that CI fails when tests fail and passes again after I restore the code. Task: Give me a safe green -> red -> green checklist: 1. Confirm the current branch and clean working tree. 2. Pick the smallest test assertion or test file to break temporarily. 3. Tell me exactly what kind of one-line change would make pytest fail. 4. Tell me the local command to confirm the failure. 5. Tell me the git commit/push sequence for the intentional red run. 6. Tell me how to restore the test and confirm the final green run. Constraints: - Do not edit files yet. - Do not suggest breaking production code; break only a test or test expectation. - The red run must be intentional and reversible. Output format: Return a numbered checklist plus a short evidence log template."
+
+**Response summary:** Verified current repo state (`git status`, `git branch --show-current`): branch `module-4`, clean working tree aside from the untracked `docs/module4/` deliverable files. Produced a 6-step numbered checklist (confirm branch/clean tree; pick smallest test assertion; exact one-line assertion-flip pattern; local `pytest -v` confirmation; git commit/push sequence for the red run; restore-and-confirm sequence for the final green run) plus a short evidence log template, all without touching any files. Then compared the plan step-by-step against what the user had actually already completed (documented in `docs/module4/ci-green-red-green-verification.md` from Entry 16) — found the executed sequence matched the plan almost exactly (same target test, same assertion flip, same commit message pattern), with the one noted gap being no explicit record of a local `pytest -v` run before the intentional-break push.
+
+**Files read/modified:** None modified. Read current repo state via `git status`/`git branch --show-current`; referenced prior `git log` evidence (commits `f518b7c`, `dd0badb`, `1a8696c`) and `docs/module4/ci-green-red-green-verification.md` from earlier entries for the comparison.
+
+**Commands executed:**
+- `git status`
+- `git branch --show-current`
+
+**Manual verification performed by user:** User had already independently completed the full green→red→green CI verification (reported in the prompt); no new manual verification requested or performed in this entry.
+
+**Outcome / conclusion:** A safe, reversible, test-only green→red→green checklist and evidence log template documented for future reference, with confirmation that the user's already-completed verification matches this plan (one minor documentation gap noted: local pytest confirmation before the red-run push).
+
+---
+
+## Entry 18
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Create a multi-stage `Dockerfile` and `.dockerignore` for the Module 4 Task Tracker, packaging the FastAPI app for local containerized runs without adding auth, a database, or an actual deployment pipeline.
+
+**Prompt (verbatim):** "Create a Dockerfile and .dockerignore for the Module 4 Task Tracker. Project context: - Python 3.11 FastAPI app. - App command should run uvicorn app.main:app --host 0.0.0.0 --port 8000. - The app exposes /health. - This module is not adding a database, auth, or deployment. Dockerfile requirements: - Use a multi-stage build. - Use a Python 3.11 slim base image. - Install dependencies from requirements.txt. - Copy only what the runtime needs. - Create a non-root user named app. - Switch to USER app before CMD. - Expose port 8000. - Do not bake secrets into the image. - Do not use python:latest. - Do not use uvicorn --reload in the container CMD. .dockerignore requirements: Exclude .env, .git, venv, .venv, __pycache__, .pytest_cache, node_modules if present, build artifacts, and local OS/editor files. Constraints: - Show me the diff before applying. - Do not modify application logic. Output format: First summarize the design. Then show the Dockerfile and .dockerignore diff." (followed by "Yes Apply both files")
+
+**Response summary:** Flagged a tension between the request and CLAUDE.md's "Do not add deployment steps" rule; asked the user to clarify via `AskUserQuestion` whether a Dockerfile counted as packaging vs. deployment — user chose to proceed, treating it as local containerization/packaging, not an actual deployment pipeline (no registry push, no cloud/k8s config). Checked repo structure and `app/main.py` for any static-file-serving or dotenv dependencies outside `app/` (found none), confirming the runtime image only needs `app/` + `requirements.txt`. Designed a two-stage Dockerfile (`builder` installs deps into `/install`; `runtime` copies only installed packages + `app/`, creates non-root user `app`, `chown`s the app dir, switches `USER app`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000` with no `--reload`). Designed `.dockerignore` covering `.git`, `.venv`/`venv` (both present in repo), `__pycache__`/`.pytest_cache`, `.env` (keeping `.env.example`), `node_modules`, build artifacts, and OS/editor files. Showed both diffs before applying; on approval, created both files unchanged from the shown diffs.
+
+**Files read/modified:** Read repo root listing, `app/` directory listing, grepped `app/main.py` for dotenv/static-file/path dependencies. Created `Dockerfile` and `.dockerignore`.
+
+**Commands executed:**
+- `ls` repo root, `ls app/`
+- Grep for `dotenv|StaticFiles|open\(|Path\(|frontend` in `app/`
+
+**Manual verification performed by user:** User resolved the CLAUDE.md "no deployment steps" conflict by explicitly choosing to treat this as packaging rather than deployment.
+
+**Outcome / conclusion:** `Dockerfile` and `.dockerignore` created at repo root, satisfying all stated requirements (multi-stage, 3.11-slim, non-root user, no `--reload`, no secrets baked in, minimal copy scope); application logic in `app/` untouched.
+
+---
+
+## Entry 19
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Compare `.dockerignore` against the instructor's required exclusion list and add only the missing entries.
+
+**Prompt (verbatim, across turns):**
+1. "Review the current .dockerignore against the instructor's expected exclusions. Task: Compare the existing .dockerignore with the following required entries: .git .github .gitignore .env .env.* venv/ .venv/ __pycache__/ *.pyc *.pyo .pytest_cache/ .coverage htmlcov/ tests/ docs/ .claude/ CLAUDE.md Requirements: - Preserve the existing file. - Add only the missing entries. - Do not remove existing valid entries. - Avoid duplicates. - Keep the file clean and organized. Constraints: - Show me the diff before applying. - Do not modify any other file. Output format: 1. List the missing entries. 2. Explain briefly why each should be excluded. 3. Show the .dockerignore diff."
+2. "Yes, apply it"
+
+**Response summary:** Read `.dockerignore` and compared line-by-line against the instructor's list. Found `.git`, `.github`, `.env`, `.env.*`, `venv`/`.venv`, `__pycache__`, `*.pyc`, `*.pyo`, `.pytest_cache` already present (some without trailing `/`, treated as equivalent, not duplicated). Identified 7 genuinely missing entries — `.gitignore`, `.coverage`, `htmlcov/`, `tests/`, `docs/`, `.claude/`, `CLAUDE.md` — with a one-line rationale each. Showed a diff inserting them into the existing grouped structure (VCS section, cache/coverage section, new project-source-exclusion section) without touching or reordering any existing lines. On approval, applied the edit to `.dockerignore` only.
+
+**Files read/modified:** Read and modified `.dockerignore`. No other files touched.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** `.dockerignore` now covers all instructor-required exclusions; all pre-existing entries preserved, no duplicates introduced.
+
+---
+
+## Entry 20
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Add a stdlib-based `HEALTHCHECK` and stage-explaining comments to the Dockerfile without changing its multi-stage design, dependency approach, or any other file.
+
+**Prompt (verbatim, across turns):**
+1. "Update the Dockerfile with only these improvements: 1. Add a Docker HEALTHCHECK that checks http://127.0.0.1:8000/health using Python's standard library, without installing curl or any new dependency. 2. Add clear comments explaining: - the builder stage, - the minimal runtime stage, - the non-root user, - the health check, - and the container startup command. Constraints: - Keep the current multi-stage design. - Keep the existing --prefix=/install dependency approach. - Do not introduce or copy a virtual environment. - Do not change application code. - Do not add dependencies. - Show me the Dockerfile diff before applying. - Do not modify .dockerignore or any other file."
+2. "Yes, apply it"
+
+**Response summary:** Read the current `Dockerfile`. Added a `HEALTHCHECK` instruction using `python -c "import urllib.request..."` (stdlib only, no curl/wget, no new dependency) polling `http://127.0.0.1:8000/health`. Added explanatory comments above the builder stage, runtime stage, non-root user block, health check, and `CMD`. Preserved the existing multi-stage layout and `--prefix=/install` approach exactly; no venv introduced, no application code or `.dockerignore` touched. Showed the diff before applying; applied on approval.
+
+**Files read/modified:** Read and modified `Dockerfile` only.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** `Dockerfile` now includes a working stdlib-based health check and stage-by-stage documentation comments, with all other constraints (design, dependency approach, scope) honored.
+
+---
+
+## Entry 21
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Verify the Dockerfile's `HEALTHCHECK` logic since Docker itself isn't available in this environment to build/run the actual container.
+
+**Prompt (verbatim):** "run healthcheck"
+
+**Response summary:** Confirmed Docker is not installed (`docker: command not found` in both Bash and PowerShell), so the container's actual `HEALTHCHECK` instruction couldn't be exercised directly. Asked the user how to proceed; user chose to verify the equivalent logic locally. Started the app with the same command as the Dockerfile's `CMD` (`uvicorn app.main:app --host 0.0.0.0 --port 8000`) in the background, then ran the exact Python one-liner from the `HEALTHCHECK` instruction against it — result: `status: 200`, `exit code: 0`, confirming the `/health` check logic itself is correct. Stopped the background uvicorn process afterward to leave no lingering server.
+
+**Files read/modified:** None modified. No files read beyond re-confirming the Dockerfile's `HEALTHCHECK` command from Entry 20.
+
+**Commands executed:**
+- `docker --version` (Bash and PowerShell — both failed, not found)
+- `.venv/Scripts/uvicorn.exe app.main:app --host 0.0.0.0 --port 8000` (background)
+- `.venv/Scripts/python.exe -c "import urllib.request, sys; ... urlopen('http://127.0.0.1:8000/health'...)"` → `status: 200`, exit 0
+- PowerShell `Get-CimInstance Win32_Process` + `Stop-Process` to clean up the background uvicorn process
+
+**Manual verification performed by user:** User chose the local-equivalent verification path via `AskUserQuestion` after being informed Docker was unavailable.
+
+**Outcome / conclusion:** The `HEALTHCHECK` command's underlying logic is confirmed correct against a running instance of the app (200/exit 0), though the actual Docker `HEALTHCHECK` instruction itself remains unverified in this environment pending a Docker-capable machine.
