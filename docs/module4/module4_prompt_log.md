@@ -737,3 +737,54 @@ This log records every significant AI interaction contributing to Module 4 deliv
 **Manual verification performed by user:** User reviewed and approved the diff at three separate gates (initial diff, post-refinement diff, and the final one-word wording change) before any of the four real files were modified, per the standing "show diff, then ask" rule for this session.
 
 **Outcome / conclusion:** Google-style docstrings (Summary/Args/Returns/Raises/Example, plus Status/Response for routes) added to all 6 route handlers, 5 storage functions, 2 public Pydantic validator methods, and 1 business-rule function in `app/`. No runtime logic, names, routes, models, or fields were changed — confirmed by the pure-insertion diff (aside from replacing one malformed non-docstring comment in `list_tasks`) and by the full pytest suite passing 44/44 afterward. No `[VERIFY]` tags were needed; the one non-obvious behavior found (`storage.update_task`'s unchanged-`updated_at` case) was documented precisely rather than glossed over, and the `TaskUpdate` title-validator skip-on-omit behavior was confirmed by direct execution before being stated as fact.
+
+---
+
+## Entry 34
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Amend the local Entry-33 docstring commit's message and push the `module-4` branch to `origin`.
+
+**Prompt (verbatim):**
+1. "Yes, push to origin/module-4."
+2. "git log --oneline -1"
+3. "git commit --amend -m \"Add Google-Style docstrings to Task Tracker\"" (sent twice, once mid-tool-rejection and once as a direct follow-up message)
+4. "push to origin/module-4"
+
+**Response summary:** The initial `git push origin module-4` attempt (in response to prompt 1) and the follow-up `git log --oneline -1` / `git status` read-only checks were each rejected by the permission system before executing. The user then issued the exact `git commit --amend -m "Add Google-Style docstrings to Task Tracker"` command directly; it was run as given (multi-line commit message from Entry 33's original commit `3949efb` replaced with the single-line message, same 5-file/318-insertion content, new hash `f81f046`). No content changes were requested or made — amend was explicit and the commit was still unpushed at the time, so no shared history was rewritten. On the follow-up "push to origin/module-4" request, `git push origin module-4` succeeded, updating the remote from `e2d1f58` to `f81f046`.
+
+**Files read/modified:** None (git metadata operation only — no working-tree files changed by the amend itself).
+
+**Commands executed:**
+- `git push origin module-4` (first attempt) → rejected by permission system, not executed.
+- `git log --oneline -1` → rejected by permission system, not executed.
+- `git status` → rejected by permission system, not executed.
+- `git commit --amend -m "Add Google-Style docstrings to Task Tracker"` → succeeded, new commit `f81f046` (5 files changed, 318 insertions(+), 2 deletions(-), same diff content as `3949efb`).
+- `git push origin module-4` → succeeded: `e2d1f58..f81f046  module-4 -> module-4`.
+
+**Manual verification performed by user:** User issued each git command explicitly and directly (push, then the amend, then push again) rather than approving proposed actions, per the "explicit git amend requested by user" exception to the standing no-amend rule.
+
+**Outcome / conclusion:** `origin/module-4` now points to `f81f046`, whose message is "Add Google-Style docstrings to Task Tracker"; the diff content is unchanged from the originally-approved Entry 33 docstring diff.
+
+---
+
+## Entry 35
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Independently verify the Google-style docstrings added in Entry 33 against the actual function implementations for three functions spanning a route handler, a storage function, and a business-rule function — checking for mismatches, omissions, or overstatements without modifying any code or docstrings.
+
+**Prompt (verbatim):**
+1. "Review the Google-style docstrings that were just added.\n\nTask:\nPick three documented functions and compare each docstring against the actual function implementation.\n\nRules:\n- Read the actual function body before making any claims.\n- Do not guess or infer behavior that is not implemented.\n- Point out any mismatches, omissions, or overstatements if they exist.\n- If a docstring accurately reflects the implementation, explicitly state that it is accurate.\n- Do not modify any code or docstrings.\n\nOutput format:\n\n| Function | Claim in Docstring | Reality in Implementation | Match? | Notes |\n|----------|---------------------|---------------------------|--------|-------|\n\nChoose three functions that demonstrate different kinds of documentation (for example, one FastAPI route handler, one storage function, and one business-rule or validation function)."
+2. "No changes needed. Keep the current docstrings as they are. I consider the Raises section to document exceptions directly related to the function's behavior, not framework-level FastAPI/Pydantic validation."
+
+**Response summary:** Re-read `app/main.py`, `app/storage.py`, and `app/business_rules.py` in full (not relying on memory of Entry 33) and selected `main.update_task` (PATCH route handler), `storage.update_task` (storage function), and `business_rules.validate_status_transition` (validation function) as the three functions, covering three different documentation styles as requested. Verified each documented claim line-by-line against the actual code and produced a claim-by-claim table. Found `storage.update_task` and `validate_status_transition` fully accurate on every claim (same-status no-op, no status-transition validation in storage, unchanged-`updated_at` short-circuit, 422 detail content). For `main.update_task`, flagged one omission rather than guessing: the docstring's `Raises` section documents only the app-level 422 (invalid status transition) but the same route can also return 422 via automatic FastAPI/Pydantic request-body validation (e.g. `TaskUpdate.validate_title` rejecting an explicit `null` title, or `extra="forbid"` rejecting unknown fields) — confirmed via existing passing tests (`test_patch_title_null_returns_422`, `test_create_task_unknown_field_returns_422`) rather than inferred. Presented this as an omission, not an error. The user then clarified their intended scope for `Raises` sections project-wide: they document exceptions the function's own logic raises, deliberately excluding framework-level Pydantic/FastAPI validation errors — resolving the flagged item as a non-issue by design, not a defect. No code or docstrings were changed, consistent with the task's "do not modify" rule.
+
+**Files read/modified:** Read `app/main.py`, `app/storage.py`, `app/business_rules.py` in full, and `tests/test_tasks.py` (grep) to confirm the omission claim with an existing test rather than assumption. No files modified.
+
+**Commands executed:** None (review-only task; the one supporting check was a `Grep` over `tests/test_tasks.py` for 422-related test names, not a shell command).
+
+**Manual verification performed by user:** User reviewed the findings table and made an explicit project-level scoping decision: `Raises` sections cover only exceptions raised by the function's own logic, not by framework/library validation layers. This decision applies going forward, not just to `main.update_task`.
+
+**Outcome / conclusion:** 2 of 3 sampled docstrings (`storage.update_task`, `validate_status_transition`) were confirmed fully accurate with no caveats. The third (`main.update_task`) was found accurate under the user's clarified scope for `Raises` — the framework-level 422 path is intentionally out of scope for that section, not an omission. No docstring or code changes made; all four `app/` files remain as committed in `f81f046`.
