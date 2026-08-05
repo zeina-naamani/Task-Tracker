@@ -470,3 +470,242 @@ This log records every significant AI interaction contributing to Module 4 deliv
 **Manual verification performed by user:** User chose the local-equivalent verification path via `AskUserQuestion` after being informed Docker was unavailable.
 
 **Outcome / conclusion:** The `HEALTHCHECK` command's underlying logic is confirmed correct against a running instance of the app (200/exit 0), though the actual Docker `HEALTHCHECK` instruction itself remains unverified in this environment pending a Docker-capable machine.
+
+---
+
+## Entry 22
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Line-by-line Dockerfile review to identify any line that could copy secrets, run the final container as root, or make the image larger than necessary.
+
+**Prompt (verbatim):** "Review the Dockerfile and identify any line that could copy secrets, run as root, or make the image larger than necessary."
+
+**Response summary:** Read the current `Dockerfile` (post-Entry 20, including `HEALTHCHECK` and comments) and reviewed every line against three criteria: secret exposure, root execution, and unnecessary image bloat. Presented a table covering all 10 relevant lines/blocks. Found no concerns on any line: the builder stage's root execution and pip cache are discarded (never copied into the runtime stage); both `COPY` instructions are explicitly scoped (`requirements.txt` only, `app/` only — never `COPY . .`), so secrets can't leak even if `.dockerignore` were misconfigured; `USER app` (line 34) is set before both `HEALTHCHECK` and `CMD`, so the container's actual runtime process never runs as root; and the multi-stage design means only `/usr/local` (installed packages) and `app/` end up in the shipped image.
+
+**Files read/modified:** Read `Dockerfile`. No files modified.
+
+**Commands executed:** None.
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Dockerfile confirmed clean on all three dimensions (no secret leakage, no root execution in the final image, no unnecessary bloat) — no changes needed.
+
+---
+
+## Entry 23
+
+**Date/Time:** 2026-08-04 (time not captured)
+
+**Objective:** Check whether Docker is now available in this environment, following up on Entry 21 where it was not.
+
+**Prompt (verbatim):** "docker --version"
+
+**Response summary:** Ran `docker --version`; Docker is now installed and available (`Docker version 29.6.2, build dfc4efb`), unlike in Entry 21. Flagged that this opens the door to a real container build/run/`HEALTHCHECK` verification that would supersede the Entry 21 local-equivalent workaround, and asked the user whether to proceed with that.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker --version` → `Docker version 29.6.2, build dfc4efb`
+
+**Manual verification performed by user:** None recorded for this entry.
+
+**Outcome / conclusion:** Docker confirmed available in this environment; actual container build/run verification of the `HEALTHCHECK` instruction remains outstanding pending user decision.
+
+---
+
+## Entry 24
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Build the Docker image from the project's multi-stage `Dockerfile`, now that Docker is confirmed available (Entry 23).
+
+**Prompt (verbatim):** "docker build -t task-tracker:module4 ."
+
+**Response summary:** Ran the build; it exceeded the 2-minute foreground timeout (slow pull of the `python:3.11-slim` base image layers) and continued in the background, completing in ~300s with exit code 0. Builder stage installed all 19 pinned packages from `requirements.txt` via `pip install --prefix=/install` (pip itself upgraded 24.0→26.2.1 first). Runtime stage copied `/install` → `/usr/local`, copied `app/`, created non-root user `app`, and `chown`ed `/app`. Image tagged successfully as `docker.io/library/task-tracker:module4`. No errors; the only warning ("running pip as root") applies solely to the discarded builder stage, not the shipped image.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker build -t task-tracker:module4 .` (backgrounded after 300s timeout; completed, exit code 0)
+
+**Manual verification performed by user:** User initiated the build directly.
+
+**Outcome / conclusion:** `task-tracker:module4` image built successfully with no errors. Running the container and verifying the real `HEALTHCHECK`/`/health` endpoint against the built image remains outstanding, pending user decision on next step.
+
+---
+
+## Entry 25
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Add a secondary `dev` tag to the already-built Module 4 image.
+
+**Prompt (verbatim):** "docker tag task-tracker:module4 task-tracker:dev"
+
+**Response summary:** Ran the tag command, then confirmed via `docker images task-tracker` that both `task-tracker:module4` and `task-tracker:dev` now reference the same image ID (`902799297a09`).
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker tag task-tracker:module4 task-tracker:dev`
+- `docker images task-tracker` (verification)
+
+**Manual verification performed by user:** User initiated the tag command directly.
+
+**Outcome / conclusion:** Two tags (`module4`, `dev`) now point to the same locally built image (`902799297a09`); no new image layers created.
+
+---
+
+## Entry 26
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Run the built Docker image as a container and verify the real (in-container) `HEALTHCHECK` and `/health` endpoint — the verification Entry 21 couldn't perform because Docker wasn't installed at the time.
+
+**Prompt (verbatim):** "docker run --rm -d -p 8000:8000 --name tt-dev task-tracker:dev"
+
+**Response summary:** Started the container detached. `docker ps --filter name=tt-dev` showed status `Up 9 seconds (healthy)`, confirming Docker's own `HEALTHCHECK` instruction passes for real, superseding the Entry 21 local-equivalent workaround (Docker wasn't available then). Additionally curled `http://localhost:8000/health` from the host, confirming `200 {"status":"ok","timestamp":"2026-08-05T06:30:15.133531+00:00"}`.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker run --rm -d -p 8000:8000 --name tt-dev task-tracker:dev`
+- `docker ps --filter name=tt-dev`
+- `curl -s -w "\nHTTP %{http_code}\n" http://localhost:8000/health` → `200`
+
+**Manual verification performed by user:** User initiated the `docker run` command directly.
+
+**Outcome / conclusion:** Real, in-container `HEALTHCHECK` confirmed healthy and `/health` returns 200 — closes out the verification gap noted in Entry 21/23. Container `tt-dev` left running pending user decision to stop it.
+
+---
+
+## Entry 27
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Verify six specific Docker artifact properties (image build, container start on port 8000, `/health` reachability, non-root container user, `.dockerignore` exclusion coverage, no secrets/`python:latest` in the Dockerfile) against the already-built `task-tracker:dev` image and already-running `tt-dev` container, without rebuilding or restarting.
+
+**Prompt (verbatim):** "Help me verify the Docker artifacts for Module 4.\n\nFiles to inspect:\n- @Dockerfile\n- @.dockerignore\n\nTask:\nGive me exact terminal commands to verify:\n1. The image builds.\n2. The container starts on port 8000.\n3. GET /health responds from inside the running container mapping.\n4. The container user is app, not root.\n5. .dockerignore excludes .env, .git, virtual environments, and caches.\n6. The Dockerfile does not copy secrets or use python:latest.\n\nUse these names unless there is a conflict:\n- image: task-tracker:dev\n- container: tt-dev\n\nContext:\n- The image has already been built successfully.\n- The container is already running and healthy.\n- Do not rebuild or restart anything unless necessary.\n- Reuse the existing running container and report the verification results.\n\nOutput format:\nReturn:\n1. Commands to run.\n2. Expected evidence.\n3. A 3-line security log template: non-root, slim base, no baked secrets."
+
+**Response summary:** Read `Dockerfile` and `.dockerignore` in full, then ran verification commands (no rebuild/restart) and reported actual evidence for each of the six checks: (1) `docker images task-tracker:dev` confirmed the existing image (`902799297a09`, 57.4MB); (2) `docker ps --filter name=tt-dev` + `docker port tt-dev` confirmed `Up ... (healthy)` with `8000/tcp` mapped; (3) `curl http://localhost:8000/health` returned `200 {"status":"ok",...}`; (4) `docker exec tt-dev whoami` and `docker inspect --format '{{.Config.User}}' task-tracker:dev` both returned `app`, confirming non-root; (5) confirmed `.dockerignore` covers `.env`/`.env.*`, `.git`/`.github`/`.gitignore`, `.venv`/`venv`, and cache directories (`__pycache__`, `.pytest_cache`, `.coverage`, `htmlcov/`); (6) confirmed `Dockerfile` pins `python:3.11-slim` in both stages (never `python:latest`) and only copies `requirements.txt`, the builder's `/install` output, and `app/` — no `COPY . .`, no `.env` reference. Delivered a 3-line security log template (non-root, slim base, no baked secrets) as requested.
+
+**Files read/modified:** Read `Dockerfile`, `.dockerignore`. No files modified.
+
+**Commands executed:**
+- `docker images task-tracker:dev`
+- `docker ps --filter name=tt-dev`
+- `docker port tt-dev`
+- `curl -s -w "\nHTTP %{http_code}\n" http://localhost:8000/health` → `200`
+- `docker exec tt-dev whoami` → `app`
+- `docker inspect --format '{{.Config.User}}' task-tracker:dev` → `app`
+
+**Manual verification performed by user:** User requested this verification directly against the already-built image and already-running container from Entries 24–26; no rebuild or restart performed, consistent with the stated constraint.
+
+**Outcome / conclusion:** All six checks passed with concrete evidence: image exists, container healthy on port 8000, `/health` returns 200, container runs as non-root user `app`, `.dockerignore` covers all four required exclusion categories, and the Dockerfile is confirmed free of `python:latest` and secret-copying patterns. `tt-dev` left running, untouched.
+
+---
+
+## Entry 28
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Check the built image's repository, tag, and disk size.
+
+**Prompt (verbatim):** "docker images task-tracker:dev --format \"table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}\""
+
+**Response summary:** Ran the formatted `docker images` query; confirmed `task-tracker:dev` is 240MB.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker images task-tracker:dev --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"` → `task-tracker  dev  240MB`
+
+**Manual verification performed by user:** User ran the command directly.
+
+**Outcome / conclusion:** Image size confirmed at 240MB, consistent with the `python:3.11-slim`-based multi-stage build.
+
+---
+
+## Entry 29
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Re-confirm the running container's process user.
+
+**Prompt (verbatim):** "docker exec tt-dev whoami"
+
+**Response summary:** Ran the command; returned `app`, matching the non-root verification already recorded in Entry 27.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker exec tt-dev whoami` → `app`
+
+**Manual verification performed by user:** User ran the command directly.
+
+**Outcome / conclusion:** Re-confirms `tt-dev` continues running as non-root user `app`.
+
+---
+
+## Entry 30
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Verify `GET /health` with full response headers through the container's port mapping.
+
+**Prompt (verbatim):** "curl -i http://localhost:8000/health"
+
+**Response summary:** Ran the command; confirmed `HTTP/1.1 200 OK`, `server: uvicorn`, `content-type: application/json`, body `{"status":"ok","timestamp":"2026-08-05T07:45:07.958123+00:00"}`.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `curl -i http://localhost:8000/health` → `200 OK`
+
+**Manual verification performed by user:** User ran the command directly.
+
+**Outcome / conclusion:** Confirms `/health` continues responding correctly with full HTTP headers through `tt-dev`'s port mapping.
+
+---
+
+## Entry 31
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Re-verify `GET /health` with a concise status-code summary, as a follow-up to Entry 30's full-header check.
+
+**Prompt (verbatim):** "curl -s -w \"\\nHTTP %{http_code}\\n\" http://localhost:8000/health"
+
+**Response summary:** Ran the command; confirmed `{"status":"ok","timestamp":"2026-08-05T07:46:08.680290+00:00"}` with `HTTP 200`.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `curl -s -w "\nHTTP %{http_code}\n" http://localhost:8000/health` → `200`
+
+**Manual verification performed by user:** User ran the command directly.
+
+**Outcome / conclusion:** Confirms `/health` remains healthy and returns 200, consistent with Entry 30.
+
+---
+
+## Entry 32
+
+**Date/Time:** 2026-08-05 (time not captured)
+
+**Objective:** Stop the running `tt-dev` container, concluding the Module 4 Docker verification session.
+
+**Prompt (verbatim):** "docker stop tt-dev"
+
+**Response summary:** Ran the stop command; confirmed via `docker ps -a --filter name=tt-dev` that the container was also removed (started with `--rm` in Entry 26), leaving no lingering containers.
+
+**Files read/modified:** None.
+
+**Commands executed:**
+- `docker stop tt-dev`
+- `docker ps -a --filter name=tt-dev` (verification, empty result)
+
+**Manual verification performed by user:** User ran the stop command directly.
+
+**Outcome / conclusion:** `tt-dev` stopped and cleaned up; `task-tracker:dev`/`task-tracker:module4` images remain locally for future use.
