@@ -39,6 +39,18 @@ class TaskCreate(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, value: str) -> str:
+        """Validate and normalize the task title.
+
+        Args:
+            value: The raw title string.
+
+        Returns:
+            str: The stripped title.
+
+        Raises:
+            ValueError: If the stripped title is blank or exceeds 200
+                characters (see ``_validate_title``).
+        """
         return _validate_title(value)
 
 
@@ -55,6 +67,25 @@ class TaskUpdate(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, value: Optional[str]) -> Optional[str]:
+        """Validate and normalize an updated task title.
+
+        Runs only when ``title`` is explicitly present in the input
+        payload (Pydantic skips this validator for an omitted
+        ``title`` field, since it keeps its ``None`` default
+        unvalidated; verified via ``TaskUpdate()`` not raising).
+
+        Args:
+            value: The raw title string, or ``None`` if explicitly
+                set to null in the payload.
+
+        Returns:
+            str: The stripped title.
+
+        Raises:
+            ValueError: If ``value`` is ``None`` (title must not be
+                explicitly null), or if the stripped title is blank
+                or exceeds 200 characters (see ``_validate_title``).
+        """
         if value is None:
             raise ValueError("title must not be null") # updated
         return _validate_title(value)

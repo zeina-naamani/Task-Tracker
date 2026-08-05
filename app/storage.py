@@ -29,6 +29,18 @@ def _build_task_response(task_data: dict) -> TaskResponse:
 
 
 def add_task(payload: TaskCreate) -> TaskResponse:
+    """Create and store a new task.
+
+    Generates a new UUID and sets ``created_at``/``updated_at`` to the
+    current UTC time.
+
+    Args:
+        payload: Validated task creation data.
+
+    Returns:
+        TaskResponse: The newly stored task, including the computed
+        ``overdue`` flag.
+    """
     now = datetime.now(timezone.utc)
     task_data = {
         "id": str(uuid4()),
@@ -50,6 +62,22 @@ def get_all_tasks(
     status: Optional[TaskStatus] = None,
     priority: Optional[TaskPriority] = None,
 ) -> list[TaskResponse]:
+    """Retrieve all stored tasks, optionally filtered.
+
+    Args:
+        search: Case-insensitive substring matched against title,
+            description, or assignee. Blank or ``None`` applies no
+            filter.
+        status: If provided, only tasks with this exact status are
+            included.
+        priority: If provided, only tasks with this exact priority are
+            included.
+
+    Returns:
+        list[TaskResponse]: Tasks matching all provided filters
+        (combined with AND), each including the computed ``overdue``
+        flag.
+    """
     tasks = list(_tasks.values())
 
     search_term = (search or "").strip().lower()
@@ -70,6 +98,16 @@ def get_all_tasks(
 
 
 def get_task_by_id(task_id: str) -> Optional[TaskResponse]:
+    """Retrieve a single stored task by its ID.
+
+    Args:
+        task_id: The UUID string identifying the task.
+
+    Returns:
+        Optional[TaskResponse]: The matching task, including the
+        computed ``overdue`` flag, or ``None`` if no task with
+        ``task_id`` exists.
+    """
     task_data = _tasks.get(task_id)
     if task_data is None:
         return None
@@ -77,6 +115,23 @@ def get_task_by_id(task_id: str) -> Optional[TaskResponse]:
 
 
 def update_task(task_id: str, payload: TaskUpdate) -> Optional[TaskResponse]:
+    """Update a stored task, merging only the fields set on payload.
+
+    Fields omitted from ``payload`` remain unchanged. This function
+    does not perform status-transition validation — that is the
+    caller's responsibility.
+
+    Args:
+        task_id: The UUID string identifying the task to update.
+        payload: The fields to update. Unset fields are ignored.
+
+    Returns:
+        Optional[TaskResponse]: ``None`` if no task with ``task_id``
+        exists. If ``payload`` has no fields set, the existing task
+        is returned unchanged and ``updated_at`` is left untouched.
+        Otherwise, the merged task is returned with ``updated_at``
+        refreshed to the current UTC time.
+    """
     task_data = _tasks.get(task_id)
     if task_data is None:
         return None
@@ -91,6 +146,15 @@ def update_task(task_id: str, payload: TaskUpdate) -> Optional[TaskResponse]:
 
 
 def delete_task(task_id: str) -> bool:
+    """Delete a stored task by its ID.
+
+    Args:
+        task_id: The UUID string identifying the task to delete.
+
+    Returns:
+        bool: ``True`` if a task was found and deleted, ``False`` if
+        no task with ``task_id`` exists.
+    """
     if task_id not in _tasks:
         return False
     del _tasks[task_id]

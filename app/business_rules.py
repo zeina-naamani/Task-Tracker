@@ -10,6 +10,24 @@ VALID_TRANSITIONS: frozenset[tuple[TaskStatus, TaskStatus]] = frozenset({
 
 
 def validate_status_transition(current: TaskStatus, new: TaskStatus) -> None:
+    """Validate that a task status transition is allowed.
+
+    A same-status transition (``current == new``) is always allowed
+    as a no-op. Otherwise, the transition must be one of the pairs in
+    ``VALID_TRANSITIONS``.
+
+    Args:
+        current: The task's current status.
+        new: The proposed new status.
+
+    Returns:
+        None
+
+    Raises:
+        HTTPException: 422 if the transition from ``current`` to
+            ``new`` is not in ``VALID_TRANSITIONS``. The error detail
+            lists the allowed transitions.
+    """
     if current == new:
         return
 
