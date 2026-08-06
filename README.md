@@ -82,6 +82,8 @@ python tests/verify_a.py
 
 ## 6. Run with Docker
 
+**Note:** If the backend is already running locally, stop it (`Ctrl+C`) before starting the Docker container, as both use port **8000**.
+
 Build the image from the repository root:
 
 ```bash
