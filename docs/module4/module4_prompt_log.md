@@ -823,3 +823,35 @@ This log records every significant AI interaction contributing to Module 4 deliv
 **Manual verification performed by user:** User reviewed and explicitly approved the diff across five checkpoints (initial draft, and refinement rounds 2, 3, 4, and the final one-word fix) before any change reached the real `README.md`, per the standing "show diff, then ask" rule. User also made two explicit content decisions overriding the AI's initial `[VERIFY]` flags: (a) state "Python 3.11 or later" as the prerequisite despite the local `.venv` actually being 3.13.7, and (b) assert the frontend is served at `http://localhost:8080` as a fact of their own setup, unverifiable from any repo file. User caught neither error introduced by the AI directly, but the AI's own final-review pass caught and disclosed one self-introduced contradiction ("below" vs. actual command position) before the user resolved it.
 
 **Outcome / conclusion:** `README.md` fully rewritten with all 10 instructor-required sections in order, exact course commands (`uvicorn app.main:app --reload --port 8000`, `pytest -v`), no deployment/auth/database/production-readiness claims, and Section 10 correctly noting the absence of a `docs/decisions/` folder while linking `docs/midcourse/mini-adr.md` and the three `docs/module4/` files. No other project file was modified. Two deliberate, user-confirmed departures from strict file-only verification remain in the shipped text (the 3.11 prerequisite wording and the `localhost:8080` frontend port) — both were explicit user instructions, not AI inference, and are documented here for traceability.
+
+---
+
+## Entry 37
+
+**Date/Time:** 2026-08-06 (time not captured)
+
+**Objective:** Review the applied `README.md` as a fresh student to produce an ordered, copy-pasteable command sequence proving it works from a clean checkout; then apply one follow-up README fix (a Docker/local port-collision note in Section 6) surfaced by that review, and commit/push both the README change and the prompt log update separately.
+
+**Prompt (verbatim, across turns):**
+1. "Review the README as a fresh student. Which commands should I run, in order, to prove it works from a clean checkout?"
+2. "Perform one final improvement to the README.\n\nIn Section 6 (Run with Docker), add a short note before the Docker commands stating that if the backend is already running locally with:\n\nuvicorn app.main:app --reload --port 8000\n\nthe user should stop it first (Ctrl+C) before starting the Docker container, because both attempt to use port 8000.\n\nKeep the wording concise and professional, for example:\n\n\"**Note:** If the backend is already running locally, stop it (`Ctrl+C`) before starting the Docker container, as both use port **8000**.\"\n\nDo not modify anything else.\n\nAfter making this change, perform one final consistency check to ensure:\n- All commands remain correct.\n- Section numbering and anchors are unchanged.\n- No other issues remain.\n\nThen show me the diff before applying."
+3. "Yes, apply this README change.\n\nThen:\n\n1. Commit only README.md with the commit message: \"Clarify Docker port usage in README\"\n2. Push the commit to origin/module-4.\n3. If this interaction should be recorded, append it to docs/module4/module4_prompt_log.md as a new entry.\n4. Commit the prompt log separately with the message: \"Update Module 4 prompt log\"\n5. Push the prompt log commit to origin/module-4.\n\nFinally, confirm: - The README change is committed and pushed. - The prompt log is committed and pushed separately. - The working tree is clean (git status shows no uncommitted changes)."
+
+**Response summary:** Read the applied `README.md` in full and walked it top-to-bottom as a first-time reader, extracting the exact copy-pasteable command sequence (clone → create/activate venv → install deps → `pytest -v` → start `uvicorn` → curl the three documented endpoints → stop the backend → `docker build`/`docker run`/curl/`docker stop`), reordering Sections 4 and 6's commands relative to the README's own presentation order because both bind port 8000 and can't run concurrently. Reported four fresh-eyes findings without editing anything: the undocumented port collision between Sections 4 and 6; the Section 4 frontend/Live Server step being impossible to prove from a terminal; `python -m venv .venv` not verifying the "3.11 or later" prerequisite before creating the venv; and the literal `<repository-url>` placeholder in Section 3. Offered (but was not asked) to actually execute the sequence from a fresh clone. The user then asked for exactly one of the four findings (the port collision) to be fixed: added a single **Note** callout immediately under the Section 6 header, before the `docker build` command, using the user's example wording verbatim. Applied the standard scratch-copy-then-`git diff --no-index` review workflow, confirmed via a final consistency check that no command, section header, or anchor was altered (Section 6's heading text is unchanged, so `#6-run-with-docker` still resolves), and showed the two-line-insertion diff before applying. On approval, copied the scratch draft over the real `README.md`, staged and committed `README.md` only with the exact requested message, pushed it, appended this log entry, then staged/committed/pushed the prompt log separately per the established convention (mirroring Entries 34–36's `git log` pattern of `Add/Rewrite X` and `Update Module 4 prompt log` as separate commits).
+
+**Files read/modified:** Read `README.md` (full, for the fresh-student review) and `.../scratchpad/README_draft2.md` (scratch copy). Modified `README.md` (Section 6 note only) and `docs/module4/module4_prompt_log.md` (this entry).
+
+**Commands executed:**
+- `git remote get-url origin` → confirmed the real clone URL for the fresh-student walkthrough.
+- `cp README.md <scratch>/README_draft2.md` — scratch copy for a reviewable edit.
+- `git diff --no-index -- README.md <scratch-draft>` — produced the two-line-insertion diff shown for approval.
+- `cp <scratch-draft> README.md` — applied the approved note.
+- `git add README.md && git commit -m "Clarify Docker port usage in README"` → commit `281f938` (1 file changed, 2 insertions).
+- `git push origin module-4` → `47ae9f5..281f938`.
+- `git add docs/module4/module4_prompt_log.md && git commit -m "Update Module 4 prompt log"` → (hash recorded after commit, see below).
+- `git push origin module-4` → prompt-log commit pushed.
+- `git status` → confirmed a clean working tree after both pushes.
+
+**Manual verification performed by user:** User reviewed and approved the Section 6 diff before it was applied, and explicitly specified the five-step commit/push/log sequence rather than leaving it to be inferred.
+
+**Outcome / conclusion:** `README.md` now includes a port-collision note in Section 6, committed separately from the prompt log per the repo's established two-commit convention (`Clarify Docker port usage in README` for the README, `Update Module 4 prompt log` for this file), both pushed to `origin/module-4`. Working tree confirmed clean after both pushes.
