@@ -12,8 +12,8 @@ Task Tracker is a learning project (AI Assisted Coding course) built as a Kanban
 - FastAPI 0.115.6
 - Pydantic v2 (2.10.3)
 - Uvicorn 0.32.1
-- pytest 9.1.1 — used by the test suite (`pytest.ini`, `tests/`); installed in the project's `.venv` but **not** pinned anywhere in the repo (not in `requirements.txt`, no `requirements-dev.txt` or CI config present)
-- httpx 0.28.1 — required transitively by FastAPI's `TestClient` (used in `tests/conftest.py`); installed in the project's `.venv` but **not** pinned anywhere in the repo, same as pytest
+- pytest 9.1.1 — used by the automated test suite and pinned in `requirements.txt`.
+- httpx 0.28.1 — used by FastAPI's `TestClient` in the test suite and pinned in `requirements.txt`.
 - Vanilla JavaScript frontend present: `frontend/index.html` (single file, no framework, no build step)
 
 Note: `requirements.txt` is UTF-16 encoded; reading it with tools that assume UTF-8 will show garbled/spaced-out characters.
