@@ -925,3 +925,24 @@ This log records every significant AI interaction contributing to Module 4 deliv
 **Manual verification performed by user:** User explicitly accepted the R1 review findings as a whole, then made three separate, explicit disposition decisions per finding (fix #1, no-op #2, no-op #3) rather than leaving them to be inferred, and required a pre-commit `git status`/`git diff` verification step before allowing the commit to proceed.
 
 **Outcome / conclusion:** `CLAUDE.md` (lines 15-16) now accurately states that `pytest` and `httpx` are pinned in `requirements.txt`, committed separately as `ac432d2` ("Fix stale dependency claims in CLAUDE.md") and pushed to `origin/module-4`. `requirements.txt`, `.github/workflows/ci.yml`, and `Dockerfile` were confirmed untouched. Findings #2 (CI doesn't build/test the Docker image) and #3 (Docker/CI vs. the "no deployment steps" rule) were both left as no-op review observations by explicit user decision — current Module 4 scope treats CI as intentionally test-only and Docker as local/manual execution, so neither constitutes an active documentation or safety defect requiring a code change. No correctness issues beyond the already-separately-fixed docstring timestamp mismatch (Entry 38) were found anywhere in the reviewed application code.
+
+---
+
+## Entry 40
+
+**Date/Time:** 2026-08-07 (time not captured)
+
+**Objective:** Re-run the full test suite as a final regression check after the R1 review's `CLAUDE.md` fix (Entry 39) and its two commits/pushes, to confirm the documentation-only change left the app's behavior unaffected.
+
+**Prompt (verbatim):** "Run pytest -v to confirm nothing broke"
+
+**Response summary:** Ran `.venv/Scripts/pytest.exe -v` from the repo root. All 44 tests in `tests/test_tasks.py` passed in 0.59s, with no collection errors or warnings — confirming the `CLAUDE.md` documentation fix (and everything committed earlier in this session) left application behavior unchanged.
+
+**Files read/modified:** None modified. Test discovery touched `tests/conftest.py`, `tests/test_tasks.py`.
+
+**Commands executed:**
+- `.venv/Scripts/pytest.exe -v` → `44 passed in 0.59s`.
+
+**Manual verification performed by user:** User requested this run directly as a post-fix regression check.
+
+**Outcome / conclusion:** Baseline reconfirmed green (44/44) after the R1 `CLAUDE.md` fix and its two pushed commits (`ac432d2`, `a6571d8`), with no behavioral regressions.
