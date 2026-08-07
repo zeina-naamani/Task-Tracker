@@ -105,8 +105,8 @@ def list_tasks(
                 "assignee": null,
                 "due_date": null,
                 "overdue": false,
-                "created_at": "2026-08-05T12:00:00+00:00",
-                "updated_at": "2026-08-05T12:00:00+00:00"
+                "created_at": "2026-08-05T12:00:00Z",
+                "updated_at": "2026-08-05T12:00:00Z"
             }
         ]
     """
@@ -151,8 +151,8 @@ def get_task(task_id: str) -> TaskResponse:
             "assignee": null,
             "due_date": null,
             "overdue": false,
-            "created_at": "2026-08-05T12:00:00+00:00",
-            "updated_at": "2026-08-05T12:00:00+00:00"
+            "created_at": "2026-08-05T12:00:00Z",
+            "updated_at": "2026-08-05T12:00:00Z"
         }
     """
     task = storage.get_task_by_id(task_id)
@@ -200,8 +200,8 @@ def create_task(payload: TaskCreate) -> TaskResponse:
             "assignee": null,
             "due_date": null,
             "overdue": false,
-            "created_at": "2026-08-05T12:00:00+00:00",
-            "updated_at": "2026-08-05T12:00:00+00:00"
+            "created_at": "2026-08-05T12:00:00Z",
+            "updated_at": "2026-08-05T12:00:00Z"
         }
     """
     return storage.add_task(payload)
@@ -253,8 +253,8 @@ def update_task(
             "assignee": null,
             "due_date": null,
             "overdue": false,
-            "created_at": "2026-08-05T12:00:00+00:00",
-            "updated_at": "2026-08-05T12:05:00+00:00"
+            "created_at": "2026-08-05T12:00:00Z",
+            "updated_at": "2026-08-05T12:05:00Z"
         }
     """
     if payload.status is not None:
