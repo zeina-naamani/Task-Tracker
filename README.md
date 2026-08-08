@@ -143,6 +143,7 @@ tests/
 └── verify_a.py    # Manual verification script
 
 docs/
+├── decisions/  # Technical decision notes
 ├── midcourse/  # Mid-course project deliverables (user stories, mini ADR, etc.)
 └── module4/    # Module 4 deliverables (prompt log, CI/Docker verification notes)
 
@@ -165,7 +166,11 @@ pytest.ini
 
 ## 10. Related documentation
 
-There is no `docs/decisions/` directory in this repo. The closest technical note is the mini ADR at [`docs/midcourse/mini-adr.md`](docs/midcourse/mini-adr.md), documenting implementation decisions for the mid-course project's due-date/overdue and search/filter features.
+Technical decision notes are documented under `docs/decisions/`:
+
+- [Technical_Notes.md](docs/decisions/Technical_Notes.md) — technical decision note on the documentation-verification approach, including verification evidence, trade-offs, consequences, and open questions.
+
+The mid-course technical note is the mini ADR at [`docs/midcourse/mini-adr.md`](docs/midcourse/mini-adr.md), documenting implementation decisions for the mid-course project's due-date/overdue and search/filter features.
 
 Module 4 deliverables are documented under `docs/module4/`:
 
