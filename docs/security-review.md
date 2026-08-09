@@ -50,7 +50,7 @@ SEC-03 and SEC-04 remain AI-only Valid findings. SEC-03 was verified as a docume
 
 These observations originated independently from the author's manual review after the initial Codex security audit. Except for Observation 5A, they are design or business-rule proposals and are not security vulnerabilities in the current requirements.
 
-### 1. Completed Late
+### M-01 — Completed Late
 
 **Classification:** New historical business/audit concept derived from the existing overdue logic.
 
@@ -58,25 +58,33 @@ The current implementation intentionally treats a task as overdue only while its
 
 A future Completed Late concept would require completion timing and history semantics. Because `Done -> InProgress` is intentionally allowed, a reliable implementation would need to define first versus latest completion and preserve the due date that applied at completion.
 
-### 2. Require assignee before progression
+This observation is useful for completion-history and accountability analysis. It is You-only because the manual review examined historical meaning after completion, while the initial AI audit focused on current security behavior.
+
+### M-02 — Require assignee before progression
 
 **Classification:** New business/accountability rule; not an existing defect.
 
 Assignee is intentionally nullable (`app/models.py:36,64`), and status-transition validation checks only status pairs (`app/business_rules.py:5-38`). No accepted requirement requires assignment before progression.
 
-### 3. Controlled assignee values
+The proposed rule would improve ownership accountability but is outside the current transition requirements. It is You-only because the manual review evaluated workflow responsibility rather than an AI-identified security failure.
+
+### M-03 — Controlled assignee values
 
 **Classification:** New data-integrity/accountability design suggestion.
 
 Assignee is currently free text in both the model and frontend (`app/models.py:36`; `frontend/index.html:476-477`). A predefined local list could improve consistency, but authentication, accounts, roles, and member management remain outside scope.
 
-### 4. Restrict title editing after progression
+This matters if assignee-based reporting or accountability is later required. It is You-only because the manual review identified semantic consistency concerns distinct from SEC-02's input-length risk.
+
+### M-04 — Restrict title editing after progression
 
 **Classification:** New business/data-integrity/audit rule; not an existing defect.
 
 `TaskUpdate` permits title changes, and storage applies valid partial updates without status-dependent title restrictions (`app/models.py:57-65`; `app/storage.py:117-145`). No accepted requirement prohibits renaming after work starts.
 
-### 5A. Frontend Delete verification mismatch
+The suggestion would preserve the identity of work after progression but introduces a new policy. It is You-only because the manual review considered historical and audit meaning not covered by the initial AI security findings.
+
+### M-05 — Frontend Delete verification mismatch
 
 **Classification:** Documentation/verification error.
 
@@ -89,25 +97,33 @@ Git history established that:
 
 The history is consistent with deletion being performed through Swagger/API using the task ID. This is not a frontend regression and is not supported as a missing required frontend implementation.
 
-### 5B. Abort/Cancel
+This matters to evidence integrity rather than application security. It is You-only because the manual review identified the browser-verification mismatch independently; later Git analysis confirmed it.
+
+### M-06 — Abort/Cancel
 
 **Classification:** New business/audit design suggestion.
 
 Replacing permanent deletion of progressed tasks with Abort or Cancel would require new task-state and history semantics. It is not an existing requirement or defect.
 
-### 5C. Mandatory reason or note
+Current DELETE behavior permanently removes a task regardless of status. Abort/Cancel would preserve lifecycle meaning but requires new state semantics, so it remains a You-only manual workflow and audit suggestion.
+
+### M-07 — Mandatory reason or note
 
 **Classification:** New audit/accountability/UI suggestion.
 
 Requiring a reason and confirmation for Delete or Abort would require new request, model, storage, and frontend behavior. No existing requirement mandates it.
 
-### 6. Earliest accepted due-date boundary
+The suggestion is useful where destructive or lifecycle-ending actions require explanation, but the project has no audit-history requirement. It is You-only because the manual review considered human accountability around those actions.
+
+### M-08 — Earliest accepted due-date boundary
 
 **Classification:** New validation/business-rule suggestion.
 
 The current model accepts syntactically valid dates without a lower boundary (`app/models.py:37,65`). Existing tests intentionally support already-overdue tasks (`tests/test_tasks.py:84-108`).
 
 A future rule could define a sensible or configurable historical lower boundary, but it should preserve legitimate past and overdue dates rather than requiring every due date to be today or later.
+
+This could reduce accidental data-entry errors, but the correct boundary requires a product decision about historical records. It is You-only because the manual review assessed semantic date plausibility beyond the initial AI validation findings.
 
 ## 5. Categories with no issue found
 
@@ -157,7 +173,7 @@ A future rule could define a sensible or configurable historical lower boundary,
 
 | Priority | Finding | Why it matters | Evidence | Recommended action | Current-scope handling |
 |---:|---|---|---|---|---|
-| 1 | SEC-01 — Explicit null PATCH causes HTTP 500 | A reachable API request produces an uncontrolled server error and may leave invalid in-memory state. | Runtime-confirmed HTTP 500; `app/models.py:57-65`; `app/main.py:260-274`; `app/storage.py:139-145` | Reject explicit null for update fields that cannot validly be null. Add regression tests proving invalid updates return 422 and do not mutate storage. | Highest-priority candidate for one specifically approved minimal `app/` fix. No fix is included in this review. |
+| 1 | SEC-01 — Explicit null PATCH causes HTTP 500 | Runtime-confirmed HTTP 500 on a reachable PATCH request; the potential stored-state impact was not runtime-confirmed. | Runtime-confirmed HTTP 500; `app/models.py:57-65`; `app/main.py:260-274`; `app/storage.py:139-145` | Reject explicit null for update fields that cannot validly be null. Add regression tests proving invalid updates return 422 and do not mutate storage. | Highest-priority candidate for one specifically approved minimal `app/` fix. No fix is included in this review. |
 | 2 | SEC-02 — Unbounded text and collection/search behavior | Long values are accepted while storage, listing, and search have no visible resource bounds. Impact could grow if remotely exposed. | Manual acceptance tests; `app/models.py:29-37`; `app/storage.py:7,60-97`; `frontend/index.html:413-477` | Define reasonable server-side text limits. Consider pagination or request/resource controls only if scale enters scope. | Document the lower trusted-local risk and avoid expanding this into database or deployment work. |
 | 3 | SEC-04 — Wildcard CORS | Arbitrary browser origins can attempt interaction with the unauthenticated local API while it is running. | `app/main.py:29-35`; documented frontend origin in `README.md:65` | Restrict origins to explicitly required local frontend origins if a minimal hardening change is approved. | Low priority. The localhost HTTP URL itself remains an accepted local-development assumption. |
 
