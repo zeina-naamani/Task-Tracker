@@ -8,7 +8,7 @@ Task Tracker is a learning project (AI Assisted Coding course) built as a Kanban
 
 ## Tech stack
 
-- Python 3.13 (verified via `.venv/pyvenv.cfg`: `version = 3.13.7`; `README.md` also specifies `py -3.13` for venv creation)
+- Python 3.11 or later; Docker and CI use Python 3.11, while the current local `.venv` was created with Python 3.13.7.
 - FastAPI 0.115.6
 - Pydantic v2 (2.10.3)
 - Uvicorn 0.32.1
