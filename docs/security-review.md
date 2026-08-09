@@ -14,7 +14,7 @@ No application fixes were made as part of this review.
 |---|---|---|---|---|---|
 | SEC-01 | Valid | Medium | `app/models.py:57-65`; `app/main.py:260-274`; `app/storage.py:139-145`; manual Swagger test | Explicit JSON `"status": null` was runtime-confirmed to return HTTP 500. `TaskUpdate.status` accepts `None`, transition validation is skipped for `None`, and explicitly supplied update fields reach storage before response validation. Persistent stored corruption is statically supported but was not runtime-confirmed with a follow-up GET or list request. | Reject explicit null for update fields that cannot validly be null, and add regression tests confirming that invalid requests return 422 without mutating stored data. |
 | SEC-02 | Valid | Low in the current trusted/local course context; potentially Medium if remotely exposed | `app/models.py:29-37`; `app/main.py:70-117`; `app/storage.py:7,60-97`; `frontend/index.html:413-477`; manual browser/API testing | Description, assignee, search length, task count, and list/search work have no visible server-side bounds. Manual testing confirmed that long Description, Assignee, and Search values are accepted. Denial of service or resource exhaustion was not reproduced; the finding is an availability/resource risk. | Define reasonable server-side text limits. Consider pagination, request-size controls, and other resource limits only if scale or remote exposure enters project scope. |
-| SEC-03 | Noise / documented scope limitation | N/A | `README.md:157-161`; `AGENTS.md:79-83`; `docs/midcourse/mini-adr.md:83-91`; `app/main.py:65-314` | The API factually has no authentication or user-level authorization. Repository documentation explicitly excludes authentication, authorization, deployment, and production hardening from the accepted course scope. It is therefore not a current implementation defect. | No current change. Reassess authentication and authorization only if the application becomes public, production-hosted, sensitive, multi-user, or ownership-aware. |
+| SEC-03 | Valid / documented course-scope limitation | N/A | `README.md:157-161`; `AGENTS.md:79-83`; `docs/midcourse/mini-adr.md:83-91`; `app/main.py:65-314` | The API factually has no authentication or user-level authorization. Repository documentation explicitly excludes authentication and authorization from the accepted course scope, so their absence is not an in-scope implementation defect. Under the instructor's grading definition, the limitation is nevertheless Valid because it would become security-relevant outside the learning/local context. | Do not add authentication or authorization to this course project. Reassess the requirement only if the application becomes public, production-hosted, sensitive, multi-user, or ownership-aware. |
 | SEC-04 | Valid | Low | `app/main.py:29-35`; `frontend/index.html:494`; `README.md:65,161`; local configuration review | `allow_origins=["*"]` and `allow_headers=["*"]` permit arbitrary browser origins to attempt interaction with the local API while it is running. `allow_credentials=False` reduces risk but does not eliminate it because the API is unauthenticated. The hardcoded `http://localhost:8000` URL is an intentional local-development assumption, not a current defect. Unrelated-origin access was not independently demonstrated at runtime. | If a minimal hardening change is approved, restrict CORS to explicitly required local frontend origins. Use environment-specific HTTPS origins only if remote deployment enters scope. |
 | SEC-05 | Noise | N/A | `requirements.txt`; `Dockerfile:6-25`; `.github/workflows/ci.yml:11-27`; `README.md:123,161` | Missing dependency hashes, immutable action/image references, and dependency scanning are technically valid supply-chain and build-hardening observations. They are outside the current local course scope, and no vulnerable dependency, compromised action, or exploited supply-chain path was confirmed. | No current change. Reassess dependency scanning and immutable build provenance if production or deployment requirements are introduced. |
 
@@ -33,10 +33,10 @@ Under these operational definitions, Agreement represents later confirmation, no
 - **Agreement: 2**
   - SEC-01
   - SEC-02
-- **AI-only valid findings: 1**
-  - SEC-04
-- **Noise from the AI audit: 2**
+- **AI-only valid findings: 2**
   - SEC-03
+  - SEC-04
+- **Noise from the AI audit: 1**
   - SEC-05
 - **You-only observations: 8**
   - One documentation/verification defect: Observation 5A
@@ -44,7 +44,7 @@ Under these operational definitions, Agreement represents later confirmation, no
 
 SEC-01 and SEC-02 were originally discovered by Codex and subsequently confirmed through manual/runtime testing. They are classified as Agreement under this document's operational definition, while their original discovery source remains Codex.
 
-SEC-04 remains AI-only because the local configuration was confirmed, but unrelated-origin browser access was not independently demonstrated.
+SEC-03 and SEC-04 remain AI-only Valid findings. SEC-03 was verified as a documented scope limitation rather than through runtime demonstration of an authentication exploit. SEC-04's local configuration was confirmed, but unrelated-origin browser access was not independently demonstrated.
 
 ## 4. Manual review observations
 
@@ -161,14 +161,25 @@ A future rule could define a sensible or configurable historical lower boundary,
 | 2 | SEC-02 — Unbounded text and collection/search behavior | Long values are accepted while storage, listing, and search have no visible resource bounds. Impact could grow if remotely exposed. | Manual acceptance tests; `app/models.py:29-37`; `app/storage.py:7,60-97`; `frontend/index.html:413-477` | Define reasonable server-side text limits. Consider pagination or request/resource controls only if scale enters scope. | Document the lower trusted-local risk and avoid expanding this into database or deployment work. |
 | 3 | SEC-04 — Wildcard CORS | Arbitrary browser origins can attempt interaction with the unauthenticated local API while it is running. | `app/main.py:29-35`; documented frontend origin in `README.md:65` | Restrict origins to explicitly required local frontend origins if a minimal hardening change is approved. | Low priority. The localhost HTTP URL itself remains an accepted local-development assumption. |
 
-## 8. Final counts
+SEC-03 is Valid under the instructor's definition because the documented absence of authentication and authorization would matter outside the learning context. It remains outside this actionable Top-3 because it is not an in-scope implementation defect, repository guidance explicitly prohibits adding authentication, and no current remediation should be performed.
 
-- **Valid security findings:** 3
-- **Noise findings:** 2
+## 8. Smallest next actions
+
+| Finding | Smallest next action | Action type | Why this is sufficient now |
+|---|---|---|---|
+| SEC-01 | In a separately approved task, reject explicit null for `TaskUpdate.status` and add one focused regression test expecting 422 without mutation. | Optional minimal fix | Directly addresses the runtime-confirmed HTTP 500 without restructuring PATCH or storage. |
+| SEC-02 | Record a backlog item to decide reasonable maximum lengths for Description, Assignee, and Search. | Backlog | The risk is valid, but denial of service was not reproduced and exact limits require a product decision. |
+| SEC-03 | Keep a concise note that authentication is intentionally excluded and must be reassessed before public, production, or multi-user use. | Documentation note | Captures the Valid scope limitation without introducing an out-of-scope feature. |
+| SEC-04 | In a separately approved task, replace wildcard origins with the explicitly required local frontend origin or origins. | Optional minimal fix | Addresses only the wildcard-CORS issue while preserving the accepted local-development setup. |
+
+## 9. Final counts
+
+- **Valid security findings:** 4
+- **Noise findings:** 1
 - **False Positives:** 0
 - **Agreement findings:** 2
-- **AI-only valid findings:** 1
+- **AI-only valid findings:** 2
 - **You-only documentation/evidence findings:** 1
 - **You-only design/business-rule suggestions:** 7
 
-Only SEC-01, SEC-02, and SEC-04 belong in the security backlog. SEC-03 and SEC-05 remain Noise. Observation 5A is a documentation/evidence defect, while the other seven You-only observations remain separate design or business-rule suggestions and should not be presented as security vulnerabilities.
+SEC-01, SEC-02, SEC-03, and SEC-04 are Valid under the instructor's grading definition. The actionable Top-3 remains SEC-01, SEC-02, and SEC-04 because SEC-03 is a documented course-scope limitation with no permitted current remediation. SEC-05 remains Noise. Observation 5A is a documentation/evidence defect, while the other seven You-only observations remain separate design or business-rule suggestions and should not be presented as security vulnerabilities.
