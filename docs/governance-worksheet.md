@@ -217,3 +217,30 @@ What value does `errorData` receive when the server’s 422 response body is emp
 ## Ownership conclusion
 
 This exercise demonstrates ownership of the selected AI-generated block by explaining its full-payload PATCH behavior, the difference between HTTP error responses and rejected or thrown failures, FastAPI validation-error handling, and the JSON parsing fallback. Some assumptions about surrounding helpers, field mapping, modal state, and refresh behavior remain identified for verification rather than being claimed as independently verified.
+
+# Part 5.3C — Personal AI Usage Rules
+
+## 1. Personal AI Usage Rules
+
+| Rule category | Draft rule | Evidence from my notes | What is still vague? | Revised rule |
+|---|---|---|---|---|
+| What I will never paste | I will never paste complete or unsanitized project material when a smaller sanitized excerpt is sufficient. | Complete backend/frontend files expose unnecessary details. Logs may expose paths, usernames, IDs, and environment details. Screenshots exposed local development information. Prompt logs and Git history may contain unrelated context or identities. Repository visibility and sharing authorization must be checked. | “Project material” is broad, and the notes do not establish a category that must never be shared under every circumstance. | I will never paste unreviewed logs, screenshots, prompt records, or Git history. Before sharing, I will remove local paths, usernames, IDs, environment details, author identities, and unrelated context. I will share only the relevant code or documentation excerpt after confirming that the repository material is authorized for sharing. |
+| What I will always verify before accepting | I will verify AI claims against the repository before accepting them. | AI documentation incorrectly claimed that frontend Delete was browser-verified; code and Git history disproved it. The ownership trace also identified assumptions requiring checks of helper functions, field mapping, modal state, `fetch()` behavior, and refresh behavior. | “Verify against the repository” does not specify what evidence must be checked or what happens when verification is incomplete. | Before accepting an AI claim or generated block, I will check the relevant source code, tests, Git history, or documented library behavior. I will confirm the claimed behavior and identify any assumptions. If the required evidence is unavailable, I will mark the claim as needing verification instead of recording it as fact. |
+| How I will record AI contributions | I will document AI-generated work and the checks I performed. | The worksheet records the selected AI-generated block, source file, line-by-line trace, assumptions requiring verification, ownership questions, student answers, technical clarification, and correction of an inaccurate AI claim. Git evidence is limited to relevant hashes, paths, and conclusions. | The notes do not establish one mandatory storage location or a format that must be used for every future contribution. Missing - add course evidence for a fixed location. | For each AI contribution I keep, I will record the affected file or code block, the AI’s contribution, the evidence I used to verify it, assumptions that still need verification, and any correction or rejected claim. I will distinguish my own answer from later technical clarification and include only sanitized, relevant Git evidence. The required storage location is: Missing - add course evidence. |
+
+## 2. Future-scenario rule test
+
+This optional follow-up tests whether each revised rule produces a clear decision in a future scenario supported by the governance worksheet.
+
+| Rule category | Future scenario | Decision from rule | Clear yes/no? | Reason |
+|---|---|---|---|---|
+| What I will never paste | I am about to paste terminal output containing a local path, username, task ID, and unrelated log lines without sanitizing it. | No—do not paste it. Remove the identifiers and unrelated lines first. | Yes | The rule explicitly prohibits sharing unreviewed logs and lists the details that must be removed. |
+| What I will always verify | AI claims that a frontend feature was implemented and browser-verified, but I have not checked the source code, tests, documentation, or Git history. | No—do not accept the claim yet. Check the available repository evidence or mark it as needing verification. | Yes | The rule defines both the required verification and what to do when evidence is unavailable. |
+| How I will record AI contributions | I keep an AI-generated code block but record only the final code, without its source location, verification evidence, remaining assumptions, or corrected AI claims. | No—the record is incomplete. Add the affected file/block, contribution, evidence, assumptions, and corrections. | Mostly yes | The required record contents are clear. However, the rule still cannot determine where the record must be stored because that remains “Missing - add course evidence”. |
+
+## 3. Short conclusion
+
+- Rule 1 gives a clear decision about unsanitized sharing.
+- Rule 2 gives a clear decision about accepting unverified AI claims.
+- Rule 3 clearly defines what information must be recorded, but the required storage location remains unsupported by the current worksheet evidence.
+- Do not invent a storage location. Preserve “Missing - add course evidence” until supporting course evidence is provided.
