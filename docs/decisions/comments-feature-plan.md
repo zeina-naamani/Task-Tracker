@@ -559,6 +559,3 @@ Only bounded implementation-verification details remain, principally:
 - sequential pagination correctness;
 - browser formatting verification.
 
-## 3. Ready to save?
-
-**Yes.** The plan is ready to save as `docs/decisions/comments-feature-plan.md`.
