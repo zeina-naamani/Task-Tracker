@@ -69,3 +69,151 @@ No High-risk sharing was evidenced. The main lesson is to minimize context, sani
 ## 3. What I Received from AI
 
 To be completed in the next Part 5.3 step.
+
+# Part 5.3B — AI-Generated Code Ownership Trace
+
+## Selected AI-generated code block
+
+The selected block is `submitTask()` from `frontend/index.html`.
+
+This block was selected because it contains meaningful frontend/API behavior, including form handling, validation, payload construction, POST and PATCH requests, HTTP error handling, and UI refresh behavior.
+
+```javascript
+      async function submitTask() {
+        clearModalErrors();
+
+        const title = document.getElementById('task-title').value.trim();
+        const description = document.getElementById('task-description').value.trim();
+        const status = document.getElementById('task-status').value;
+        const priority = document.getElementById('task-priority').value;
+        const assignee = document.getElementById('task-assignee').value.trim();
+        const dueDate = document.getElementById('task-due-date').value;
+
+        // Validation
+        if (!title) {
+          showFieldError('title', 'Title is required');
+          return;
+        }
+
+        const payload = {
+          title: title,
+          description: description === '' ? '' : description, // null not included here
+          status: status,
+          priority: priority,
+          assignee: assignee === '' ? null : assignee,
+          due_date: dueDate === '' ? null : dueDate
+        };
+
+        try {
+          let response;
+          if (modalState.mode === 'create') {
+            response = await fetch(`${BASE_URL}/tasks`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } else if (modalState.mode === 'edit') {
+            response = await fetch(`${BASE_URL}/tasks/${modalState.taskId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          }
+
+          if (!response.ok) {
+            if (response.status === 422) {
+              const errorData = await response.json().catch(() => ({}));
+              if (errorData.detail && Array.isArray(errorData.detail)) {
+                // FastAPI validation error format: array of errors
+                errorData.detail.forEach(err => {
+                  if (err.loc && err.loc[1]) {
+                    const field = err.loc[1];
+                    showFieldError(field, err.msg);
+                  } else {
+                    showModalError(err.msg || 'Validation error');
+                  }
+                });
+              } else if (errorData.detail) {
+                showModalError(errorData.detail);
+              } else {
+                showModalError('Server validation failed');
+              }
+              return;
+            } else {
+              const errorData = await response.json().catch(() => ({}));
+              showModalError(errorData.detail || `Server error: ${response.status}`);
+              return;
+            }
+          }
+
+          // Success: close modal and refresh board
+          closeModal();
+          await fetchTasks();
+        } catch (error) {
+          console.error('Request error:', error);
+          showModalError('Network error. Please try again.');
+        }
+      }
+```
+
+## Line-by-line ownership trace
+
+| Line(s) | What it does | Why it is there | What could break | Do I own this yet? |
+|---|---|---|---|---|
+| 987 | Declares the asynchronous `submitTask()` function. `async` permits the function to use `await` and means it returns a Promise. | Submitting and refreshing tasks involve operations that finish later. | Removing `async` would make the `await` expressions invalid JavaScript. | Understood: `async` is required because this function uses `await`. |
+| 988 | Calls `clearModalErrors()` to remove messages left by a previous submission attempt. | Old errors, such as “Title is required,” should not remain after the user corrects the form and tries again. | Without it, stale validation messages could remain visible even when they are no longer accurate. | Needs surrounding-helper verification: the purpose is understood, but the exact elements cleared depend on `clearModalErrors()`. |
+| 990–995 | Reads title, description, status, priority, assignee, and due date from the form. Text inputs are trimmed. | These values are needed to validate the form and construct the API payload. Trimming prevents surrounding spaces and makes a whitespace-only title empty. | Missing or renamed element IDs would make `getElementById()` return `null`, causing `.value` to fail. | Understood, with the assumption that all referenced control IDs exist. |
+| 997–1001 | Checks for a blank title, displays a title-field error, and exits with `return`. | The title is required, and the request must stop when it is missing. | Without `return`, the code would display the error but still submit the invalid form. | Understood: the error is shown and `return` prevents submission. |
+| 1003–1010 | Builds a payload containing title, description, status, priority, assignee, and due date. | The form values must be collected into an object matching the API’s expected fields. | Incorrect property names or types could produce validation errors. During editing, sending every field can replace stored values that the user did not intend to change. | Understood, subject to verifying the payload fields against the backend request models. |
+| 1004 | Places the value from the `title` variable into the payload property named `title`. | The backend expects a `title` field. | Changing the property name would break the API contract. | Understood: the left side is the property name and the right side is the variable value. |
+| 1005 | Keeps an empty description as `''`; otherwise it uses the entered description. The current source comment notes that `null` is not included here. | The code represents “no description” as an empty string rather than `null`. | Changing it to `null` could fail if the backend does not accept a nullable description. The conditional is otherwise redundant because both outcomes preserve the description string. | Understood, with backend nullability still requiring model verification. |
+| 1006–1007 | Adds the selected status and priority to the payload. | Both values are required for task creation and are also included during editing. | Values that do not match the backend enums could return HTTP 422. Sending status during PATCH can also invoke transition validation. | Understood, assuming the form options match the backend enum values. |
+| 1008–1009 | Converts blank assignee and due-date values to `null`; otherwise it sends their current values. | The code represents an absent optional value as JSON `null` instead of an empty string. | This would fail if the backend did not allow either field to be nullable. | Understood: `condition ? null : value` means “send null if empty; otherwise send the value.” |
+| 1012–1013 | Starts the `try` block and declares a shared `response` variable. | Create and edit requests use different branches but share the same response-handling code. | If neither mode assigns `response`, line 1028 would try to read `.ok` from `undefined`. | Needs verification that `modalState.mode` can only be `create` or `edit`. |
+| 1014–1019 | In create mode, sends a POST request to `${BASE_URL}/tasks` with a JSON body. | POST `/tasks` is the API operation used to create a task. | An incorrect URL, method, header, or payload would prevent creation or cause an HTTP error. | Understood, assuming `BASE_URL` and the backend route are configured as expected. |
+| 1017–1018 | Declares that the request body is JSON and serializes the JavaScript payload using `JSON.stringify(payload)`. | A plain JavaScript object must be converted into JSON text before it is sent in the request body. | Without serialization or the correct content type, the backend might not parse the body correctly. | Understood: `JSON.stringify()` converts the JavaScript object into JSON request text. |
+| 1020–1025 | In edit mode, sends a PATCH request to the URL containing `modalState.taskId`. | PATCH updates the task identified by the task ID. | A missing or incorrect ID could return 404 or target the wrong task. | Understood, assuming the task ID is correctly stored when the edit modal opens. |
+| 1021–1024 | Sends the complete current form payload in the PATCH request, not only the field that changed. | The edit form supplies all displayed task values to one shared payload. | Unchanged, stale, or default form values could replace saved values even if the user intended to change only one field. | Understood: changing only the title still sends description, status, priority, assignee, and due date. |
+| 1028 | Checks `response.ok` to determine whether the HTTP response status is successful. | `fetch()` does not reject merely because the server returns HTTP 422 or 500; those are completed HTTP responses and must be checked explicitly. | Without this check, HTTP error responses would continue through the success path. It also fails if `response` was never assigned. | Understood: HTTP error responses and rejected requests are different cases. |
+| 1029–1030 | Detects HTTP 422 and attempts to parse the response body as JSON. If JSON parsing fails, it uses `{}`. | FastAPI uses 422 for validation failures, and parsing the body may provide useful error details. The fallback prevents a parsing failure from replacing the original handling path. | Without the fallback, an empty or invalid JSON body would throw and reach the outer catch. | Understood: `errorData` becomes `{}` when the body cannot be parsed, while the HTTP status remains 422. |
+| 1031–1040 | Checks for FastAPI’s array-style validation details and processes each error. | A request can contain multiple field-validation errors. | A different response structure or nested location may not map correctly to a frontend field. | Needs verification against the actual FastAPI error shapes and field-name mapping. |
+| 1034–1036 | Uses `err.loc[1]` as the field name and displays `err.msg` beside that field. | FastAPI body errors commonly use locations such as `['body', 'title']`. | Nested errors, query errors, or API names such as `due_date` may not map to the expected frontend control. | Needs verification that `showFieldError()` supports every possible backend field name. |
+| 1037–1039 | Displays a modal-level validation message when an error cannot be mapped to a field. | Non-field or unexpectedly structured validation errors still need visible feedback. | Without this fallback, some validation errors could be invisible to the user. | Understood. |
+| 1041–1045 | Handles a non-array `detail` value or displays “Server validation failed” when no detail exists. | Business-rule errors may use a single detail message rather than an array. | Unexpected detail types might display poorly; without the fallback, the user might receive no explanation. | Understood, with the possible detail types still requiring verification. |
+| 1046 | Exits after handling the 422 response. | The modal must remain open so the user can correct the form. | Without this `return`, the code would continue to the success path and close the modal. | Understood. |
+| 1047–1051 | Handles other unsuccessful HTTP responses by parsing their JSON and displaying either `detail` or a status-based fallback. | Errors such as 404 and 500 are not ordinary field-validation failures. | Without the return, an unsuccessful response would be treated as success. Displaying raw server detail could also be inappropriate if it exposed internal information. | Understood, with server error-detail exposure requiring verification. |
+| 1054–1056 | After a successful response, closes the modal and waits for `fetchTasks()` to refresh the board. | The saved task should appear in the current board state. | Without refreshing, the board could remain stale. If refreshing fails after saving, the outer catch may display a network-error message even though the save succeeded. | Understood, with `fetchTasks()` failure behavior requiring surrounding-code verification. |
+| 1057–1060 | Handles rejected Promises and other exceptions thrown inside the `try`, logs the technical error, and displays a general network message. | The user needs feedback when the request or another awaited/thrown operation fails. | Removing it could leave failures unhandled. The message can be inaccurate because the catch can also receive programming errors or a failed board refresh. | Understood: an unreachable backend is one example, but network failure is not the only possible cause. |
+
+## Three critical ownership checks
+
+### Check 1 — PATCH sends the complete payload
+
+**Question:**  
+If the user changes only the title, which other fields will this PATCH request still send and potentially overwrite?
+
+**My answer:**  
+“Even if I change only the title, the PATCH request still sends all the form fields with their current values, including description, status, priority, assignee, and due date. Empty assignee and due-date fields are sent as `null`. Therefore, this PATCH sends the full form payload rather than only the field that changed.”
+
+### Check 2 — HTTP errors versus catch(error)
+
+**Question:**  
+Why does an HTTP 422 or 500 response not automatically enter the outer `catch` block?
+
+**My answer:**  
+“JavaScript does not go to `catch(error)` for HTTP 422 or 500 because the backend was reached and returned a response, even though it was an error response. `catch(error)` is used when the request itself fails, such as when the backend/Uvicorn cannot be reached.”
+
+**Technical clarification:**  
+The outer catch can also receive other exceptions or rejected Promises thrown inside the `try`; an unreachable backend is a clear example, not the only possible cause.
+
+### Check 3 — JSON parsing fallback
+
+**Question:**  
+What value does `errorData` receive when the server’s 422 response body is empty or not valid JSON?
+
+**My answer:**  
+“If the 422 response body is empty or cannot be read as valid JSON, `errorData` becomes an empty object `{}`, so there are no error details/descriptions available from `errorData`. The HTTP status is still 422.”
+
+## Ownership conclusion
+
+This exercise demonstrates ownership of the selected AI-generated block by explaining its full-payload PATCH behavior, the difference between HTTP error responses and rejected or thrown failures, FastAPI validation-error handling, and the JSON parsing fallback. Some assumptions about surrounding helpers, field mapping, modal state, and refresh behavior remain identified for verification rather than being claimed as independently verified.
