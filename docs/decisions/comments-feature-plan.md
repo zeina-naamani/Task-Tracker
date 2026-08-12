@@ -102,6 +102,12 @@ The mapping will:
 
 This remains proportional to the repository and introduces no database, external cache, distributed lock, authentication, or infrastructure service.
 
+The idempotency check, comment creation, and idempotency-result recording must run as one protected single-process in-memory operation:
+
+`check idempotency key → create comment if absent → record idempotency result`
+
+Use a simple in-memory lock or protected section appropriate for this single-process learning project. This prevents two near-simultaneous requests using the same task and `Idempotency-Key` from both creating comments. The protection is process-local and disappears when the backend process restarts, consistent with the existing in-memory storage limitation.
+
 Authentication remains outside scope, so `author` stays validated free text ([AGENTS.md](D:/AI%20Assisted%20Coding%20Course/Task-Tracker/AGENTS.md:79)).
 
 ## 2. API Routes
@@ -139,11 +145,13 @@ The frontend will generate one UUID-shaped idempotency key for each intended com
 1. Confirm that `task_id` identifies an existing task.
 2. Validate and normalize `author` and `body`.
 3. Validate that the idempotency header is present and usable.
-4. Check whether the task and key combination was previously accepted.
-5. Generate a string UUID for the new comment.
-6. Generate `created_at` as a timezone-aware UTC datetime.
-7. Store the comment and its idempotency record.
+4. Enter the single-process in-memory protected section.
+5. Check whether the task and key combination was previously accepted.
+6. If the key is absent, generate the comment’s string UUID and timezone-aware UTC `created_at`.
+7. Store the new comment and record its idempotency result before leaving the protected section.
 8. Return the created comment.
+
+Steps 4–7 form one protected `check → create → record` operation. The backend must not allow two near-simultaneous requests with the same task and idempotency key to create two comments.
 
 **Success responses:**
 
@@ -300,12 +308,15 @@ Length boundaries must be measured after trimming.
 
 - `test_create_comment_replayed_with_same_key_and_payload_returns_existing_comment`
 - `test_create_comment_replayed_with_same_key_does_not_increase_comment_count`
+- `test_create_comment_near_simultaneous_same_task_key_and_payload_creates_one_comment`
 - `test_create_comment_same_key_with_different_payload_returns_409`
 - `test_create_comment_same_payload_with_different_keys_creates_distinct_comments`
 - `test_delete_task_removes_comment_idempotency_records`
 - `test_storage_reset_clears_comment_idempotency_records`
 
 These tests distinguish accidental request replay from an intentional second comment with the same text.
+
+The near-simultaneous request test is a planned automated test. It must verify that requests using the same task, `Idempotency-Key`, and payload create only one comment and that both requests resolve consistently with the approved idempotency contract. This plan does not implement or run that test.
 
 ### Edge cases and integrity
 
@@ -323,17 +334,16 @@ These tests distinguish accidental request replay from an intentional second com
 
 No automated browser-test framework is visible in the inspected repository. Manually verify:
 
-- the separate Comments modal;
-- loading and empty states;
-- initial page size;
-- Load more behavior;
-- oldest-first ordering across pages;
-- trimmed input;
-- validation errors;
-- replay behavior after an uncertain request;
-- browser-local timestamp conversion;
-- the friendly timestamp display;
-- task-board responses remaining unchanged.
+1. Open Comments for a task.
+2. Verify the empty state when the task has no comments.
+3. Add a valid comment successfully.
+4. Verify that invalid or blank comment input shows validation.
+5. Verify that Load More works when additional comments exist.
+6. Verify that comments remain oldest-first.
+7. Verify that an idempotent retry does not create a duplicate comment.
+8. Verify that network/API failures display an appropriate error.
+9. Verify that the server-generated UTC timestamp displays in a friendly browser-local date/time format.
+10. Verify that deleting a task removes its associated comments.
 
 Frontend automation would require a separately approved testing decision.
 
@@ -490,8 +500,8 @@ No unresolved product decision remains for the initial comments feature.
 
 The following are implementation-verification items, not reopened product questions:
 
-- Confirm that repeated requests using the same idempotency key are handled correctly when they arrive close together.
-- Confirm that the chosen in-memory update sequence does not create two comments before the key record is visible.
+- Confirm that the approved single-process protected section makes `check → create → record` atomic for near-simultaneous requests using the same task and idempotency key.
+- Confirm through the planned automated test that only one comment is created and both requests resolve consistently with the approved idempotency contract.
 - Confirm that the frontend reuses a key only for retries of the same normalized submission.
 - Confirm that pagination does not skip or repeat comments during ordinary sequential use.
 - Confirm timestamp formatting in the browsers used for course verification.
@@ -515,7 +525,7 @@ No unresolved product assumptions remain for the planned initial scope.
 
 Implementation must still verify:
 
-- correct handling of near-simultaneous requests with one idempotency key;
+- correct operation of the approved single-process in-memory protected section for near-simultaneous requests using one task and idempotency key;
 - correct reuse and reset of frontend idempotency keys;
 - stable pagination without repeated or skipped comments during sequential loading;
 - browser support and output for the chosen local-time formatting;
@@ -531,7 +541,7 @@ Implementation must still verify:
 6. **Task responses:** Keep existing task responses and board-fetch payload unchanged; load comments separately.
 7. **Module placement:** Keep the flat backend structure in `app/models.py`, `app/main.py`, and `app/storage.py`.
 8. **Pagination:** Use lightweight offset/limit loading with a paginated response and Load more behavior.
-9. **Duplicate prevention:** Use backend idempotency keys in addition to frontend submit guarding.
+9. **Duplicate prevention:** Use backend idempotency keys and a single-process in-memory protected `check → create → record` operation in addition to frontend submit guarding.
 10. **Timezone display:** Keep server timestamps in UTC and convert them to browser-local time only for display.
 11. **Timestamp format:** Display a friendly value such as `11 Aug 2026, 11:30 PM`.
 
@@ -542,9 +552,10 @@ Implementation must still verify:
 The following questions are now resolved:
 
 - pagination and expected comment-volume handling;
-- stronger duplicate-submission protection;
+- stronger duplicate-submission protection, including process-local idempotency atomicity;
 - UTC versus browser-local display;
-- friendly timestamp presentation.
+- friendly timestamp presentation;
+- the final manual browser acceptance checklist.
 
 They are now initial feature requirements rather than assumptions.
 
@@ -554,7 +565,7 @@ No unresolved product question remains for the initial plan.
 
 Only bounded implementation-verification details remain, principally:
 
-- near-simultaneous idempotent request handling;
+- verification of the approved near-simultaneous idempotency protection;
 - frontend key lifecycle;
 - sequential pagination correctness;
 - browser formatting verification.
