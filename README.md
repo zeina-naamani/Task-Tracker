@@ -166,6 +166,8 @@ pytest.ini
 
 ## 10. Related documentation
 
+- [Personal AI Coding Playbook](docs/ai-playbook.md) — personal rules, review habits, course evidence, and tool choices for AI-assisted coding work.
+
 Technical decision notes are documented under `docs/decisions/`:
 
 - [Technical_Notes.md](docs/decisions/Technical_Notes.md) — technical decision note on the documentation-verification approach, including verification evidence, trade-offs, consequences, and open questions.
