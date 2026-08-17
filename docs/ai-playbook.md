@@ -12,13 +12,13 @@
 - I do not want AI making assumptions about the repository when it can inspect the actual files, and I independently verify important results before accepting them.
 - **Course evidence:** In 5.4C, I had Codex show me the exact proposed changes before modifying the Comments feature plan. I reviewed and approved the changes first, then reviewed the resulting diff before allowing the commit and push. In 5.5A, I checked the claim about task deletion and confirmed that deletion exists in the backend API but is not exposed as a frontend UI action. I had Codex correct that distinction before I approved the architecture document.
 
-## My non-negotiables
+## My Non-Negotiables
 
 - I want AI to stick to what I asked for, use the actual project files as evidence, and tell me when something cannot be confirmed instead of assuming or inventing it.
 - Important decisions remain my final decisions. Existing working behavior should not be changed unnecessarily, and sensitive information must not be exposed to AI.
 - **Course evidence:** In Architecture Strategy C (5.5C), I limited Codex to `app/main.py`, `app/models.py`, and `app/storage.py`. Information outside those files had to be marked “not visible from the files I read” rather than inferred. During the Task Tracker frontend work, I checked that existing creation, editing, validation, and drag-and-drop behavior still worked after changes. During the course, when using AI coding tools such as Codex, Cursor, GitHub Copilot, and Claude Code, I kept their access and the information I provided project-specific and limited to what was relevant to the current task, following my existing security practice of keeping unrelated or sensitive information outside the approved scope.
 
-## My review rules
+## My Review Rules
 
 - I review AI output against the original task and requirements, check proposed diffs before approving changes, verify that only intended files changed, and check Git status before committing.
 - I refine or reject AI suggestions when needed, run relevant tests when application code changes, and commit or push only after reviewing and approving the result.
@@ -40,6 +40,6 @@
 - **My one rule is:** Use AI as a partner, not as the final decision-maker: I inspect, verify, reject, revise, and own the final result.
 - **Decision evidence:** In 5.4, I used ChatGPT to review and refine the Comments feature requirements, then used Codex for planning grounded in the actual repository. During the Module 5 security review, I used Codex to inspect repository evidence, then graded its findings as Valid, False Positive, or Noise and compared them with my manual scan. During the Task Tracker frontend/backend integration work, I used ChatGPT and Cursor to troubleshoot the CORS problem, then verified the fix myself by running the application and confirming that the Kanban board loaded and appeared correctly. During my Docker course work, I used Claude Code to run and check the Docker setup before running it myself in the terminal and verifying it in Docker Desktop.
 
-## 30-Day Re-read Commitment
+## 30-Day Re-Read Commitment
 
 I will re-read this playbook in 30 days, review whether these rules still match how I actually use AI, and update them based on what I have learned.
