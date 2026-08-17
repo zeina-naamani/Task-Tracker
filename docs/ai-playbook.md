@@ -27,7 +27,7 @@
 ## What I am still figuring out
 
 - How much context should I give AI?
-- When should I use ChatGPT vs. Codex?
+- When is it better for me to work with AI through the terminal, such as Claude Code, versus directly with the repository/folder, such as Codex?
 - When should I test manually vs. use automated tests?
 
 ## Decision Card
@@ -38,7 +38,7 @@
 - **For infrastructure I reach for:** Claude Code for terminal-based infrastructure work; I still review the proposed changes and risks before approving them.
 - **I will never paste** passwords, API keys, access tokens, login credentials, private keys, secrets from `.env` files, or other sensitive information into an AI tool.
 - **My one rule is:** Use AI as a partner, not as the final decision-maker: I inspect, verify, reject, revise, and own the final result.
-- **Decision evidence:** In 5.4, I used ChatGPT to review and refine the Comments feature requirements, then used Codex for planning grounded in the actual repository. During the Module 5 security review, I used Codex to inspect repository evidence, then graded its findings as Valid, False Positive, or Noise and compared them with my manual scan. During the Task Tracker frontend/backend integration work, I used ChatGPT and Cursor to troubleshoot the CORS problem, then verified the fix myself by running the application and confirming that the Kanban board loaded and appeared correctly. During my Docker course work, I used Claude Code to run and check the Docker setup before running it myself in the terminal and verifying it in Docker Desktop.
+- **Decision evidence:** In **Module 1 (Requirements & Architecture)**, I used browser-based AI tools, including ChatGPT and Claude, to help with reasoning, drafting, comparing choices, and refining project requirements and architecture decisions, while I reviewed and made the final decisions myself. In **Module 2 (Backend Development)**, I used Cursor while developing the FastAPI backend and working through the implementation, validation, and business rules. In **Module 3 (Frontend & Testing)**, I initially used GitHub Copilot for continuous editor assistance while developing and reviewing the frontend and testing work. After reaching its usage limit, I continued the development work with Cursor. I also used ChatGPT and Cursor while troubleshooting the frontend/backend CORS integration and verified the fix myself by running the application and confirming that the Kanban board loaded and appeared correctly. In **Module 4 (DevOps & CI/CD)**, I used Claude Code for terminal-based work involving Docker and CI/CD, then verified the results myself through the terminal and Docker Desktop. In **Module 5 (Security & Governance)**, I used Codex for repository-grounded planning, review, and governance work; during the security review, I graded its findings as Valid, False Positive, or Noise and compared them with my manual scan.
 
 ## 30-Day Re-Read Commitment
 
