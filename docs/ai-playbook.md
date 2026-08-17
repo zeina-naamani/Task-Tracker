@@ -28,7 +28,7 @@
 
 - How much context should I give AI?
 - When is it better for me to work with AI through the terminal, such as Claude Code, versus directly with the repository/folder, such as Codex?
-- When should I test manually vs. use automated tests?
+- When should I rely on local pytest runs, and when should I rely on CI verification?
 
 ## Decision Card
 
