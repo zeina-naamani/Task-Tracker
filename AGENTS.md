@@ -102,3 +102,5 @@ Module 5 focuses on grading and governing AI-assisted coding work, not building 
 - Do not invent findings, commands, behavior, or business rules.
 - If evidence is unavailable, ambiguous, or not visible in the repository, state that clearly and mark the claim as `not confirmed` instead of guessing.
 - Preserve existing user changes and do not overwrite repository guidance without inspecting it first.
+- Preserve existing working behavior and run the relevant verification or tests after changes; report failures exactly as observed.
+- Do not stage, commit, or push unless the user explicitly approves those Git actions.
