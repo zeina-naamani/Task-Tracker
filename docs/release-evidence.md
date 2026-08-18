@@ -212,3 +212,21 @@ The temporary `tt-dev` container was stopped. Because it was launched with `--rm
 ### Docker Conclusion
 
 `Docker ready — no changes needed`
+
+## Documentation Claim-vs-Reality Log
+
+| Claim checked | Evidence used | Result | Change made, if any |
+| ------------- | ------------- | ------ | ------------------- |
+| The backend can be started with `uvicorn app.main:app --reload --port 8000`, and the API exposes `GET /health`. | `README.md`; `app/main.py`; Final Project baseline runtime verification. The observed response was HTTP `200` with `{"status":"ok","timestamp":"2026-08-17T10:04:31.783805+00:00"}`. This timestamp was observed during that run and is not a fixed expected value. | Accurate | None |
+| Docker uses a multi-stage `python:3.11-slim` build, runs as non-root user `app`, provides a `/health` health check, and starts Uvicorn without `--reload`. | `README.md`; `Dockerfile`; `.dockerignore`; Final Project Docker build/run verification. `docker build -t task-tracker:dev .` succeeded; the container started successfully as `app`; `/health` returned HTTP `200`; Docker reported `healthy`; the runtime command was `uvicorn app.main:app --host 0.0.0.0 --port 8000`. | Accurate | None |
+| CI runs on push and pull request, uses Python 3.11, installs dependencies, runs `pytest -v`, and allows failing tests to fail the workflow. | `README.md`; `.github/workflows/ci.yml`; `requirements.txt`; `pytest.ini`; current Final Project GitHub Actions verification; historical Module 4 fail-and-recovery evidence. The current `final-project` run `docs: add final project baseline evidence` at commit `aaa67de1b701cb6647c069401d38d95d0e8f259f` was successful/green. The historical sequence was green, deliberately broken test → red, restored test → green. | Accurate | None |
+
+### Additional Documentation Correction
+
+One additional documentation check found an incomplete evidence range in `docs/module4/verified-interaction.md`. The documented status-transition behavior itself was accurate, but the manual verification citation originally referenced `app/business_rules.py::validate_status_transition` at lines 12–21. The verified implementation required lines 12–39.
+
+The citation was corrected in commit `e4bf3f39f233d125e6553025aac8ec7e7eef5fa1` with commit message `docs: correct status transition evidence range`.
+
+### Documentation Conclusion
+
+The three primary release-readiness documentation claims were verified as accurate, and one additional Module 4 evidence citation was corrected. No application, Docker, CI, test, or frontend behavior needed to be changed as a result of these documentation checks.
