@@ -82,3 +82,56 @@ Supporting backend responses observed during the manual check:
 The baseline verification passed: backend startup, `/health`, automated tests (44/44), frontend serving, manual Kanban rendering, task creation, and task editing all passed.
 
 This is baseline evidence captured before later Final Project changes. Later final verification results should be recorded separately rather than replacing or being presented as these baseline results.
+
+## CI Evidence
+
+### CI Configuration Verification by Codex
+
+Codex inspected `.github/workflows/ci.yml`, `requirements.txt`, and `pytest.ini` and confirmed:
+
+- CI triggers on `push` and `pull_request`.
+- CI explicitly uses Python `3.11`.
+- Dependencies are installed before testing with `pip install -r requirements.txt`.
+- CI runs `pytest -v` without a test-path restriction, so the full suite runs.
+- A nonzero pytest exit code fails the CI job.
+
+Dangerous-shortcut check:
+
+| Check | Result |
+| --- | --- |
+| `continue-on-error` | Not Present |
+| `\|\| true` | Not Present |
+| Skipped or commented-out pytest | Not Present |
+| Other test-failure bypasses | Not Present |
+| Missing dependency installation | Not Present |
+| Vague or unpinned Python setup | Not Present |
+
+Configuration judgment: `CI ready — no changes needed`.
+
+### Student Manual GitHub Actions Verification
+
+Codex could not access the live GitHub Actions run. The student manually opened GitHub Actions and verified the current Final Project run:
+
+- Workflow/run: `docs: add final project baseline evidence`
+- Branch: `final-project`
+- Commit: `aaa67de` (`aaa67de1b701cb6647c069401d38d95d0e8f259f`)
+- Result: **Successful / green**
+- Duration shown by GitHub: **19 seconds**
+
+No run URL was provided or recorded.
+
+### Historical Module 4 Fail-and-Recovery Evidence
+
+Separately from the current Final Project run, the student verified this GitHub Actions sequence on the `module-4` branch:
+
+1. `Add GitHub Actions CI workflow` → successful / green.
+2. `Deliberately break test for CI verification` → failed / red.
+3. `Restore passing test - from 201 back to 200` → successful / green.
+4. Later Module 4 CI runs continued to pass.
+
+This demonstrates that the workflow failed when a test was deliberately broken and returned to green after the test was restored. This historical sequence is not the current Final Project CI run.
+
+### CI Conclusion
+
+CI verification passes based on configuration inspection, the absence of dangerous failure-bypass shortcuts, the current successful `final-project` GitHub Actions run verified by the student, and historical fail-and-recovery evidence showing that failing tests can fail CI.
+
