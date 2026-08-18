@@ -135,3 +135,80 @@ This demonstrates that the workflow failed when a test was deliberately broken a
 
 CI verification passes based on configuration inspection, the absence of dangerous failure-bypass shortcuts, the current successful `final-project` GitHub Actions run verified by the student, and historical fail-and-recovery evidence showing that failing tests can fail CI.
 
+## Docker Evidence
+
+### Docker Configuration Verification
+
+- Base image: `python:3.11-slim`
+- Multi-stage build:
+  - Builder working directory: `/build`
+  - Runtime working directory: `/app`
+- Dependencies are installed in the builder, and only the installed dependencies are copied into the runtime image.
+- The runtime image copies the installed dependencies and `app/`.
+- Runtime command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+- Exposed port: `8000`
+- Runtime user: non-root user `app`
+- Docker health check target: `http://127.0.0.1:8000/health`
+
+### Build Verification
+
+Command:
+
+```bash
+docker build -t task-tracker:dev .
+```
+
+The build succeeded with no material build errors. Pip produced a standard root-user warning in the isolated builder stage; this was not a runtime security failure, and the final runtime container uses the non-root `app` user.
+
+### Runtime Verification
+
+Command:
+
+```bash
+docker run --rm -d -p 8000:8000 --name tt-dev task-tracker:dev
+```
+
+- Port mapping: host `8000` → container `8000`
+- The container ran successfully.
+- Runtime user: `app`
+- Actual runtime command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+
+### Health Verification
+
+Command:
+
+```powershell
+curl.exe -sS -w "`nHTTP_STATUS=%{http_code}`n" http://localhost:8000/health
+```
+
+Observed result:
+
+```text
+{"status":"ok","timestamp":"2026-08-18T10:27:22.101132+00:00"}
+HTTP_STATUS=200
+HEALTH=healthy RUNNING=true
+```
+
+The timestamp above is the response observed during this verification run; it is not a fixed expected value.
+
+### Docker Safety Evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Docker build | Pass | Build succeeded |
+| Container run | Pass | Container stayed running |
+| `/health` | Pass | HTTP 200 and Docker healthy |
+| Clear runtime command | Pass | Explicit Uvicorn command without `--reload` |
+| Non-root user | Implemented | Runtime user `app` |
+| `.env` / secrets copied | Not Present | `.env` and `.env.*` ignored; broad repository copy not used |
+| Dangerous/unrelated files copied | Not Present | Runtime image receives only selected dependencies and `app/` |
+
+`.env.example` may remain in the build context, but the Dockerfile does not copy it into the runtime image. Frontend and other non-selected context files are not copied into the final runtime image.
+
+### Cleanup
+
+The temporary `tt-dev` container was stopped. Because it was launched with `--rm`, it was removed automatically. The local `task-tracker:dev` image remains available.
+
+### Docker Conclusion
+
+`Docker ready — no changes needed`
