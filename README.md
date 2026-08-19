@@ -185,6 +185,5 @@ The mid-course technical note is the mini ADR at [`docs/midcourse/mini-adr.md`](
 
 Module 4 deliverables are documented under `docs/module4/`:
 
-- [`module4_prompt_log.md`](docs/module4/module4_prompt_log.md) — cumulative, append-only prompt log for Module 4 work.
 - [`ci-green-red-green-verification.md`](docs/module4/ci-green-red-green-verification.md) — evidence log for the CI green→red→green verification.
 - [`verified-interaction.md`](docs/module4/verified-interaction.md) — verified-interaction note on status-transition business rules.
