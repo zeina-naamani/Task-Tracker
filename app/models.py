@@ -87,8 +87,23 @@ class TaskUpdate(BaseModel):
                 or exceeds 200 characters (see ``_validate_title``).
         """
         if value is None:
-            raise ValueError("title must not be null") # updated
+            raise ValueError("title must not be null")
         return _validate_title(value)
+
+    @field_validator("description")
+    @classmethod
+    def normalize_description(cls, value: Optional[str]) -> str:
+        return value or ""
+
+    @field_validator("status", "priority")
+    @classmethod
+    def reject_null_required_fields(
+        cls,
+        value: Optional[TaskStatus | TaskPriority],
+    ) -> TaskStatus | TaskPriority:
+        if value is None:
+            raise ValueError("field must not be null")
+        return value
 
 
 class TaskResponse(BaseModel):

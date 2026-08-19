@@ -1,45 +1,57 @@
-# Personal AI Coding Playbook
+# AI Playbook
 
 ## When I reach for AI first
 
-- I first use AI to review the instructor-provided improved prompt and check whether it needs additional constraints or specifications based on my project. If refinements are suggested, I review them and decide whether to approve them, reject them, or keep the instructor's original prompt.
-- I also reach for AI for planning, reviewing work, debugging, generating an initial draft, and comparing choices.
-- **Course evidence:** During the Comments feature planning in 5.4B/5.4C, I used AI to refine and review the plan and identify gaps, but I reviewed its suggestions, made refinements when needed, and made the final decisions before accepting changes. After choosing Architecture Option A for the Task Tracker, I used AI to generate an initial ADR draft based on my decision and reasoning. I then reviewed and refined the draft before using the revised version as the final project documentation. During the Task Tracker frontend/backend integration work, I used ChatGPT and Cursor to troubleshoot the CORS problem, then verified the fix myself by running the application and confirming that the Kanban board loaded and appeared correctly. In 5.5, comparing the three architecture strategies helped me refine the conclusion that Strategy B was best for repository-wide architecture/onboarding work, while Strategy C was better for bounded feature or change-planning tasks.
+I reach for AI when the task is bounded and I can give it clear evidence: reviewing a known diff, brainstorming edge cases after requirements are settled, suggesting focused tests, comparing implementation options, or drafting technical documentation that I will check against the repository. In this course, AI was useful for reviewing code and plans, identifying gaps, comparing architecture approaches, and drafting CI, Docker, and documentation work. I also use it for debugging after I have collected a real error, failing test, or runtime observation.
 
-## When I do not reach for AI
+AI helps me explore and review; it does not make my final product or architecture decisions. My working loop is **Ask → Inspect → Run → Test → Refine**.
 
-- I do not let AI independently make final decisions, modify files before I review and approve the proposed changes, or commit and push changes without my approval.
-- I do not want AI making assumptions about the repository when it can inspect the actual files, and I independently verify important results before accepting them.
-- **Course evidence:** In 5.4C, I had Codex show me the exact proposed changes before modifying the Comments feature plan. I reviewed and approved the changes first, then reviewed the resulting diff before allowing the commit and push. In 5.5A, I checked the claim about task deletion and confirmed that deletion exists in the backend API but is not exposed as a frontend UI action. I had Codex correct that distinction before I approved the architecture document.
+## When I do not reach for AI first
 
-## My Non-Negotiables
+I do not start with AI when requirements are unclear, when I need to inspect the repository before forming a question, or when the learning objective is for me to reason through the problem myself. I pause before using AI for security-sensitive or high-risk changes unless I have concrete evidence and a narrow scope. I also avoid asking AI to decide when it lacks the local context needed to distinguish an intended behavior from a defect.
 
-- I want AI to stick to what I asked for, use the actual project files as evidence, and tell me when something cannot be confirmed instead of assuming or inventing it.
-- Important decisions remain my final decisions. Existing working behavior should not be changed unnecessarily, and sensitive information must not be exposed to AI.
-- **Course evidence:** In Architecture Strategy C (5.5C), I limited Codex to `app/main.py`, `app/models.py`, and `app/storage.py`. Information outside those files had to be marked “not visible from the files I read” rather than inferred. During the Task Tracker frontend work, I checked that existing creation, editing, validation, and drag-and-drop behavior still worked after changes. During the course, when using AI coding tools such as Codex, Cursor, GitHub Copilot, and Claude Code, I kept their access and the information I provided project-specific and limited to what was relevant to the current task, following my existing security practice of keeping unrelated or sensitive information outside the approved scope.
+I do not use AI to expand a task into authentication, a production database, deployment architecture, unrelated frontend work, or broad refactoring when those are outside the requirements. A technically true production-hardening suggestion is not automatically an actionable defect in a small learning project.
 
-## My Review Rules
+## My non-negotiables
 
-- I review AI output against the original task and requirements, check proposed diffs before approving changes, verify that only intended files changed, and check Git status before committing.
-- I refine or reject AI suggestions when needed, run relevant tests when application code changes, and commit or push only after reviewing and approving the result.
-- **Course evidence:** In 5.4C, I reviewed the proposed changes and resulting diff before approving the commit and push. In 5.5A, I independently checked the task-deletion claim and required a correction before approving the architecture document. During the Task Tracker backend work, I ran the automated test suite and confirmed that all 44 tests passed instead of relying only on the AI-generated implementation. During Module 5 documentation work, I used `git status --short` before committing and checked it again after pushing to confirm that the working tree was clean.
+- I never paste credentials, tokens, `.env` values, real personal or customer data, production-sensitive logs, or secrets into an AI tool.
+- I keep the task and changed files within the approved scope and preserve existing work.
+- I inspect proposed changes and remain responsible for every decision; AI does not stage, commit, or push without my approval.
+- I verify important claims with repository evidence, focused checks, and the appropriate full test suite.
+- I do not submit a change that I cannot explain, verify, and defend as my own work.
+
+## My review rules
+
+I inspect the actual diff, confirm which files changed, and compare every recommendation with the current requirements and code. I run focused verification for the changed behavior, then the appropriate full test suite; I add a human API or UI check when it provides evidence that automated tests do not. I grade code-review findings as **Useful / Noise / Wrong** and security findings as **Valid / False Positive / Noise** instead of accepting every suggestion.
+
+CR-1 showed why semantic judgment matters. AI initially grouped description, status, and priority null values together as values to reject. Repository inspection showed that descriptions are intentionally empty strings, while status and priority must remain non-null; assignee and due date are intentionally nullable. I therefore chose field-specific behavior, verified it with focused and full tests, and checked it separately through Swagger. That experience reinforced my rule to distinguish a plausible AI pattern from the product semantics actually supported by the repository.
 
 ## What I am still figuring out
 
-- How much context should I give AI?
-- When is it better for me to work with AI through the terminal, such as Claude Code, versus directly with the repository/folder, such as Codex?
-- When should I rely on local pytest runs, and when should I rely on CI verification?
+I am still learning when production hardening is proportionate for a small project, when different AI coding tools best fit a task, and what team conventions are most useful for recording AI assistance. I also want more experience deciding how much automated browser or UI testing is justified for a project of this size.
 
 ## Decision Card
 
-- **For a new feature I reach for:** ChatGPT for planning and refining requirements, then the appropriate repository-aware tool for repository-grounded planning or implementation.
-- **For a code review I reach for:** Codex for repo-grounded code review, then I review and verify its findings before accepting any changes.
-- **For debugging I reach for:** ChatGPT to help me understand the problem and narrow down possible causes, then Cursor when the debugging requires working through the actual project code.
-- **For infrastructure I reach for:** Claude Code for terminal-based infrastructure work; I still review the proposed changes and risks before approving them.
-- **I will never paste** passwords, API keys, access tokens, login credentials, private keys, secrets from `.env` files, or other sensitive information into an AI tool.
-- **My one rule is:** Use AI as a partner, not as the final decision-maker: I inspect, verify, reject, revise, and own the final result.
-- **Decision evidence:** In **Module 1 (Requirements & Architecture)**, I used browser-based AI tools, including ChatGPT and Claude, to help with reasoning, drafting, comparing choices, and refining project requirements and architecture decisions, while I reviewed and made the final decisions myself. In **Module 2 (Backend Development)**, I used Cursor while developing the FastAPI backend and working through the implementation, validation, and business rules. In **Module 3 (Frontend & Testing)**, I initially used GitHub Copilot for continuous editor assistance while developing and reviewing the frontend and testing work. After reaching its usage limit, I continued the development work with Cursor. I also used ChatGPT and Cursor while troubleshooting the frontend/backend CORS integration and verified the fix myself by running the application and confirming that the Kanban board loaded and appeared correctly. In **Module 4 (DevOps & CI/CD)**, I used Claude Code for terminal-based work involving Docker and CI/CD, then verified the results myself through the terminal and Docker Desktop. In **Module 5 (Security & Governance)**, I used Codex for repository-grounded planning, review, and governance work; during the security review, I graded its findings as Valid, False Positive, or Noise and compared them with my manual scan.
+### New feature
 
-## 30-Day Re-Read Commitment
+AI may help clarify requirements, identify edge cases, compare options, and suggest tests. Before implementation, I inspect the repository, confirm the scope and acceptance criteria, and make the final design decision myself.
 
-I will re-read this playbook in 30 days, review whether these rules still match how I actually use AI, and update them based on what I have learned.
+### Code review
+
+I ask AI to review a specific diff, then grade each finding and verify useful comments against the code, requirements, and tests. A confident comment is still only a candidate until the evidence supports it.
+
+### Debugging
+
+I collect the real error, failing test, request/response, or runtime behavior before asking for possible causes. I test the smallest supported explanation before accepting a fix.
+
+### Infrastructure
+
+I check CI, Docker, and configuration suggestions against the actual project requirements and documented commands. I verify them through configuration inspection and safe runtime commands, and I reject deployment or hardening work that is outside scope.
+
+### Never paste
+
+I never paste credentials, tokens, `.env` values, secrets, real personal or customer data, or production-sensitive logs.
+
+### One rule
+
+If I cannot read, understand, explain, and verify an AI-generated change, I do not consider it my own work and I do not submit it.

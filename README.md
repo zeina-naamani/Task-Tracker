@@ -15,6 +15,15 @@ Core features:
 - Business-rule validation for task status transitions
 - Loading and error states in the UI
 
+### Final Project submission
+
+- **Branch reviewed:** `final-project`
+- **What this submission demonstrates:** The existing Task Tracker remains runnable within its intended course scope. CI runs the pytest suite on every push and pull request, and the Docker image builds and runs with `/health` returning HTTP `200`. AI review, security-review, and ownership evidence is recorded under `docs/`.
+- **Commands:** Follow [Run the app locally](#4-run-the-app-locally), [Run tests](#5-run-tests), and [Run with Docker](#6-run-with-docker) for the exact repository commands.
+- **Evidence:** [Final Project release evidence](docs/release-evidence.md), [Final AI review and ownership evidence](docs/final-ai-review.md), and [AI Playbook](docs/ai-playbook.md).
+
+AI assisted with bounded code and diff review, CI/Docker/documentation review, security review, and debugging. I verified the work through repository inspection, diff review, automated tests, Docker/runtime evidence, and a manual Swagger check. I corrected one initial AI recommendation: after verifying the repository's field semantics, I decided that `description: null` should normalize to `""`, while null status and priority should be rejected.
+
 ## 2. Prerequisites
 
 - **Python 3.11 or later** — matches the version used by Docker and CI (see [Run with Docker](#6-run-with-docker) and [CI workflow summary](#7-ci-workflow-summary)).

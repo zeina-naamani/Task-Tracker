@@ -64,6 +64,10 @@ def test_patch_existing_task_with_null_due_date_clears_due_date(client):
     assert response.status_code == 200
     assert response.json()["due_date"] is None
 
+    get_response = client.get(f"/tasks/{task_id}")
+    assert get_response.status_code == 200
+    assert get_response.json()["due_date"] is None
+
 
 def test_create_task_with_invalid_due_date_returns_422(client):
     response = client.post(
@@ -211,6 +215,39 @@ def test_patch_partial_update_keeps_other_fields(client, created_task):
     assert body["id"] == created_task["id"]
     assert body["created_at"] == created_task["created_at"]
     assert body["updated_at"] != created_task["updated_at"]
+
+
+def test_patch_description_null_normalizes_and_persists_empty_string(client):
+    create_response = client.post(
+        "/tasks",
+        json={"title": "Clear description", "description": "Original description"},
+    )
+    assert create_response.status_code == 201
+    task_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/tasks/{task_id}",
+        json={"description": None},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["description"] == ""
+
+    get_response = client.get(f"/tasks/{task_id}")
+    assert get_response.status_code == 200
+    assert get_response.json()["description"] == ""
+
+
+def test_patch_description_empty_string_remains_accepted(client, created_task):
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"description": ""},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["description"] == ""
+
+
 def test_patch_title_null_returns_422(client, created_task):
     response = client.patch(
         f"/tasks/{created_task['id']}",
@@ -234,6 +271,50 @@ def test_patch_title_null_does_not_corrupt_task_list(client, created_task):
     body = list_response.json()
     assert len(body) == 1
     assert body[0]["title"] == created_task["title"]
+
+
+def test_patch_status_null_returns_422_without_mutating_task(client, created_task):
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"status": None},
+    )
+
+    assert response.status_code == 422
+
+    get_response = client.get(f"/tasks/{created_task['id']}")
+    assert get_response.status_code == 200
+    assert get_response.json()["status"] == created_task["status"]
+
+
+def test_patch_priority_null_returns_422_without_mutating_task(client, created_task):
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"priority": None},
+    )
+
+    assert response.status_code == 422
+
+    get_response = client.get(f"/tasks/{created_task['id']}")
+    assert get_response.status_code == 200
+    assert get_response.json()["priority"] == created_task["priority"]
+
+
+def test_patch_assignee_null_remains_accepted(client):
+    create_response = client.post(
+        "/tasks",
+        json={"title": "Assigned task", "assignee": "alice"},
+    )
+    task_id = create_response.json()["id"]
+
+    response = client.patch(f"/tasks/{task_id}", json={"assignee": None})
+
+    assert response.status_code == 200
+    assert response.json()["assignee"] is None
+
+    get_response = client.get(f"/tasks/{task_id}")
+    assert get_response.status_code == 200
+    assert get_response.json()["assignee"] is None
+
 
 def test_patch_not_found_returns_404(client):
     missing_id = "00000000-0000-0000-0000-000000000000"
